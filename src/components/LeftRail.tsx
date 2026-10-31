@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ViewFilter, NetworkId } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface LeftRailProps {
   currentFilter: ViewFilter;
@@ -21,12 +22,13 @@ export const LeftRail: React.FC<LeftRailProps> = ({
   activeNetwork,
   onSelectNetwork,
 }) => {
+  const { t } = useLanguage();
   const [tooltip, setTooltip] = useState<{ text: string; shortcut?: string; y: number } | null>(null);
 
   const navItems: { id: ViewFilter; label: string; shortcut: string; icon: React.ReactNode }[] = [
     {
       id: 'inbox',
-      label: 'Inbox',
+      label: t('inbox'),
       shortcut: 'Ctrl | Alt | 1',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
@@ -37,7 +39,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     },
     {
       id: 'archive',
-      label: 'Archive',
+      label: t('archive'),
       shortcut: 'Ctrl | Alt | 2',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
@@ -49,7 +51,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     },
     {
       id: 'reminders',
-      label: 'Reminders',
+      label: t('reminders'),
       shortcut: 'Ctrl | Alt | 4',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
@@ -60,7 +62,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     },
     {
       id: 'sendlater',
-      label: 'Send Later',
+      label: t('sendLater'),
       shortcut: 'Ctrl | Alt | 5',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
@@ -71,7 +73,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     },
     {
       id: 'requests',
-      label: 'Requests',
+      label: t('requests'),
       shortcut: 'Ctrl | Alt | 6',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
@@ -82,7 +84,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
     },
     {
       id: 'lowpriority',
-      label: 'Low Priority',
+      label: t('lowPriority'),
       shortcut: 'Ctrl | Alt | 7',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">

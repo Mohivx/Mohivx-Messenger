@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NetworkId } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NewChatModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
   onClose,
   onCreateChat,
 }) => {
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkId>('telegram');
 
@@ -42,7 +44,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
             autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search contacts or enter phone/handle..."
+            placeholder={t('searchContactsPlaceholder')}
             className="flex-1 bg-transparent border-none outline-none text-[14px] text-white placeholder-white/40"
           />
           <button
@@ -68,8 +70,8 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
               </svg>
             </div>
             <div>
-              <div className="text-[13px] font-semibold text-white">New Group</div>
-              <div className="text-[11px] text-white/50">Chat with multiple people</div>
+              <div className="text-[13px] font-semibold text-white">{t('newGroup')}</div>
+              <div className="text-[11px] text-white/50">{t('newGroupDesc')}</div>
             </div>
           </button>
 
@@ -80,8 +82,8 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
               </svg>
             </div>
             <div>
-              <div className="text-[13px] font-semibold text-white">New Broadcast / Blast</div>
-              <div className="text-[11px] text-white/50">Send one message to multiple contacts</div>
+              <div className="text-[13px] font-semibold text-white">{t('newBroadcast')}</div>
+              <div className="text-[11px] text-white/50">{t('newBroadcastDesc')}</div>
             </div>
           </button>
         </div>
@@ -89,7 +91,7 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
         {/* Contacts list */}
         <div className="max-h-[300px] overflow-y-auto p-[8px] space-y-[2px]">
           <div className="px-[8px] py-[4px] text-[11px] font-medium text-white/40">
-            CONTACTS
+            {t('contactsHeading')}
           </div>
 
           {contacts.map((c) => (

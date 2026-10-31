@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NetworkId } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface AddAccountModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
   onClose,
   onConnectNetwork,
 }) => {
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [connectingNetwork, setConnectingNetwork] = useState<NetworkId | null>(null);
 
@@ -62,7 +64,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
       >
         {/* Header */}
         <div className="px-[16px] py-[14px] flex items-center justify-between border-b border-white/10">
-          <h2 className="text-[14px] font-semibold text-white">Add an Account</h2>
+          <h2 className="text-[14px] font-semibold text-white">{t('addAccountTitle')}</h2>
           <button
             onClick={onClose}
             className="text-white/40 hover:text-white p-[4px] rounded-full"
@@ -85,7 +87,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search services..."
+              placeholder={t('searchServices')}
               className="flex-1 bg-transparent border-none outline-none text-[13px] text-white placeholder-white/40"
             />
           </div>
@@ -124,24 +126,24 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                 <span className="w-[16px] h-[16px] rounded-full bg-green-500 inline-block ring-2 ring-black" />
                 <span className="w-[16px] h-[16px] rounded-full bg-red-500 inline-block ring-2 ring-black" />
               </div>
-              <h3 className="text-[13px] font-semibold text-white">Import Browser Sessions</h3>
+              <h3 className="text-[13px] font-semibold text-white">{t('importBrowserSessions')}</h3>
             </div>
             <p className="text-[11px] text-white/60 leading-relaxed mb-[10px]">
-              Mohivx Messenger can securely connect via your active browser sessions with full local isolation.
+              {t('importBrowserDesc')}
             </p>
             <button
               onClick={() => handleConnect('telegram')}
               className="w-full py-[8px] bg-gradient-to-r from-[#6953F2] to-[#0C52F9] hover:from-[#7b67ff] hover:to-[#2264ff] text-white rounded-full text-[12px] font-semibold shadow-md transition-all"
             >
-              Scan Active Sessions
+              {t('scanActiveSessions')}
             </button>
           </div>
         </div>
 
         {/* Footer */}
         <div className="px-[16px] py-[10px] bg-white/[0.02] border-t border-white/5 flex items-center justify-between text-[11px] text-white/50">
-          <span>Mohivx Secure Connector Engine</span>
-          <span className="text-[#2561fb] hover:underline cursor-pointer">Learn more</span>
+          <span>{t('secureConnectorEngine')}</span>
+          <span className="text-[#2561fb] hover:underline cursor-pointer">{t('learnMore')}</span>
         </div>
       </div>
     </div>

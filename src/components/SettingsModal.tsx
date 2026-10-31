@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Account } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface SettingsModalProps {
 
 type SettingsTab =
   | 'accounts'
+  | 'language'
   | 'general'
   | 'appearance'
   | 'notifications'
@@ -30,6 +32,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenAddAccount,
   onDisconnectAccount,
 }) => {
+  const { language, setLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<SettingsTab>('accounts');
   const [showNetworkIcons, setShowNetworkIcons] = useState(true);
   const [colorizeIcons, setColorizeIcons] = useState(true);
@@ -39,17 +42,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   if (!isOpen) return null;
 
   const tabs: { id: SettingsTab; label: string; badge?: string }[] = [
-    { id: 'accounts', label: 'Accounts', badge: `${accounts.length}` },
-    { id: 'general', label: 'General' },
-    { id: 'appearance', label: 'Appearance' },
-    { id: 'notifications', label: 'Notifications' },
-    { id: 'hotkeys', label: 'Hotkeys' },
-    { id: 'devices', label: 'Devices' },
-    { id: 'ai', label: 'AI' },
-    { id: 'plus', label: 'Mohivx Plus' },
-    { id: 'integrations', label: 'Integrations' },
-    { id: 'storage', label: 'Storage' },
-    { id: 'about', label: 'About' },
+    { id: 'accounts', label: t('tabAccounts'), badge: `${accounts.length}` },
+    { id: 'language', label: t('tabLanguage') },
+    { id: 'general', label: t('tabGeneral') },
+    { id: 'appearance', label: t('tabAppearance') },
+    { id: 'notifications', label: t('tabNotifications') },
+    { id: 'hotkeys', label: t('tabHotkeys') },
+    { id: 'devices', label: t('tabDevices') },
+    { id: 'about', label: t('tabAbout') },
   ];
 
   return (
@@ -63,7 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div>
             {/* Header */}
             <div className="flex items-center justify-between mb-[16px]">
-              <h2 className="text-[16px] font-semibold text-white">Settings</h2>
+              <h2 className="text-[16px] font-semibold text-white">{t('settingsTitle')}</h2>
               <button
                 onClick={onClose}
                 className="text-white/40 hover:text-white p-[4px] rounded-full"
@@ -81,7 +81,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] font-semibold text-white">Mohivx</span>
-                  <span className="text-[10px] font-semibold text-green-400 bg-green-500/10 px-[5px] py-[1px] rounded-full">Active</span>
+                  <span className="text-[10px] font-semibold text-green-400 bg-green-500/10 px-[5px] py-[1px] rounded-full">{t('active')}</span>
                 </div>
                 <div className="text-[11px] text-white/50 truncate">mohivx@gmail.com</div>
               </div>
@@ -89,22 +89,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {/* Navigation Tabs */}
             <div className="space-y-[2px]">
-              {tabs.map((t) => {
-                const isActive = activeTab === t.id;
+              {tabs.map((tItem) => {
+                const isActive = activeTab === tItem.id;
                 return (
                   <button
-                    key={t.id}
-                    onClick={() => setActiveTab(t.id)}
+                    key={tItem.id}
+                    onClick={() => setActiveTab(tItem.id)}
                     className={`w-full flex items-center justify-between px-[12px] py-[8px] rounded-[8px] text-[13px] font-medium transition-colors ${
                       isActive
                         ? 'bg-white/15 text-white'
                         : 'text-white/70 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <span>{t.label}</span>
-                    {t.badge && (
+                    <span>{tItem.label}</span>
+                    {tItem.badge && (
                       <span className="text-[11px] bg-white/10 px-[6px] py-[1px] rounded-full text-white/80">
-                        {t.badge}
+                        {tItem.badge}
                       </span>
                     )}
                   </button>
@@ -124,8 +124,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-[16px]">
                 <div>
-                  <h3 className="text-[16px] font-semibold text-white">Connected Accounts</h3>
-                  <p className="text-[12px] text-white/50">Manage your connected messaging networks.</p>
+                  <h3 className="text-[16px] font-semibold text-white">{t('tabAccounts')}</h3>
+                  <p className="text-[12px] text-white/50">{t('connectedAccountsDesc')}</p>
                 </div>
                 <button
                   onClick={onOpenAddAccount}
@@ -135,7 +135,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
-                  <span>Add Account</span>
+                  <span>{t('addAccount')}</span>
                 </button>
               </div>
 
@@ -154,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </div>
                     <div className="flex items-center gap-[8px]">
                       <span className="text-[11px] text-green-400 bg-green-500/10 px-[8px] py-[2px] rounded-full font-medium">
-                        Connected
+                        {t('connected')}
                       </span>
                       {onDisconnectAccount && acc.networkId === 'telegram' && (
                         <button
@@ -162,7 +162,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           onClick={() => onDisconnectAccount(acc)}
                           className="text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10 px-[8px] py-[3px] rounded-[6px] border border-red-500/20 transition-all font-medium"
                         >
-                          Disconnect
+                          {t('disconnect')}
                         </button>
                       )}
                     </div>
@@ -172,18 +172,65 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
+          {activeTab === 'language' && (
+            <div className="space-y-[20px]">
+              <div>
+                <h3 className="text-[16px] font-semibold text-white mb-[4px]">{t('tabLanguage')}</h3>
+                <p className="text-[12px] text-white/50">{t('languageDesc')}</p>
+              </div>
+
+              <div className="p-[16px] bg-white/5 border border-white/5 rounded-[12px] space-y-[14px]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[13px] font-semibold text-white">العربية (Arabic)</div>
+                    <div className="text-[11px] text-white/50">تفعيل الواجهة العربية بالكامل ودعم RTL</div>
+                  </div>
+                  <button
+                    onClick={() => setLanguage('ar')}
+                    className={`px-[16px] py-[6px] rounded-full text-[12px] font-semibold transition-all ${
+                      language === 'ar'
+                        ? 'bg-[#2561fb] text-white shadow-md ring-2 ring-[#2561fb]/40'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    {language === 'ar' ? 'مفعّل ✓' : 'اختيار'}
+                  </button>
+                </div>
+
+                <div className="h-[1px] bg-white/5" />
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[13px] font-semibold text-white">English</div>
+                    <div className="text-[11px] text-white/50">Standard English interface with LTR alignment</div>
+                  </div>
+                  <button
+                    onClick={() => setLanguage('en')}
+                    className={`px-[16px] py-[6px] rounded-full text-[12px] font-semibold transition-all ${
+                      language === 'en'
+                        ? 'bg-[#2561fb] text-white shadow-md ring-2 ring-[#2561fb]/40'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                  >
+                    {language === 'en' ? 'Active ✓' : 'Select'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'general' && (
             <div className="space-y-[20px]">
               <div>
-                <h3 className="text-[16px] font-semibold text-white mb-[4px]">General Settings</h3>
+                <h3 className="text-[16px] font-semibold text-white mb-[4px]">{t('tabGeneral')}</h3>
                 <p className="text-[12px] text-white/50">Configure core messaging behavior.</p>
               </div>
 
               <div className="p-[16px] bg-white/5 border border-white/5 rounded-[12px] space-y-[14px]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[13px] font-semibold text-white">Incognito Mode</div>
-                    <div className="text-[11px] text-white/50">Keep chats unread and suppress read receipts.</div>
+                    <div className="text-[13px] font-semibold text-white">{t('incognitoMode')}</div>
+                    <div className="text-[11px] text-white/50">{t('incognitoDesc')}</div>
                   </div>
                   <input
                     type="checkbox"
@@ -197,8 +244,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[13px] font-semibold text-white">Typing Indicators</div>
-                    <div className="text-[11px] text-white/50">Broadcast when you are typing a response.</div>
+                    <div className="text-[13px] font-semibold text-white">{t('typingIndicator')}</div>
+                    <div className="text-[11px] text-white/50">{t('typingIndicatorDesc')}</div>
                   </div>
                   <input
                     type="checkbox"
@@ -214,35 +261,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'appearance' && (
             <div className="space-y-[20px]">
               <div>
-                <h3 className="text-[16px] font-semibold text-white mb-[4px]">Appearance</h3>
+                <h3 className="text-[16px] font-semibold text-white mb-[4px]">{t('tabAppearance')}</h3>
                 <p className="text-[12px] text-white/50">Customize the visual styling of Mohivx Messenger.</p>
               </div>
 
               <div className="p-[16px] bg-white/5 border border-white/5 rounded-[12px] space-y-[14px]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-[13px] font-semibold text-white">Show Network Icons</div>
-                    <div className="text-[11px] text-white/50">Display small badges on contact avatars.</div>
+                    <div className="text-[13px] font-semibold text-white">{t('showNetworkIcons')}</div>
+                    <div className="text-[11px] text-white/50">{t('showNetworkIconsDesc')}</div>
                   </div>
                   <input
                     type="checkbox"
                     checked={showNetworkIcons}
                     onChange={(e) => setShowNetworkIcons(e.target.checked)}
-                    className="w-[18px] h-[18px] accent-[#2561fb] cursor-pointer"
-                  />
-                </div>
-
-                <div className="h-[1px] bg-white/5" />
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-[13px] font-semibold text-white">Colorize Network Icons</div>
-                    <div className="text-[11px] text-white/50">Use original brand colors for service icons.</div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={colorizeIcons}
-                    onChange={(e) => setColorizeIcons(e.target.checked)}
                     className="w-[18px] h-[18px] accent-[#2561fb] cursor-pointer"
                   />
                 </div>
@@ -253,7 +285,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'hotkeys' && (
             <div className="space-y-[16px]">
               <div>
-                <h3 className="text-[16px] font-semibold text-white mb-[4px]">Keyboard Shortcuts</h3>
+                <h3 className="text-[16px] font-semibold text-white mb-[4px]">{t('tabHotkeys')}</h3>
                 <p className="text-[12px] text-white/50">Navigate fast like a pro.</p>
               </div>
 
@@ -284,23 +316,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <img src="./assets/icon-128.png" alt="Mohivx Logo" className="w-[84px] h-[84px] object-contain drop-shadow-xl" />
               <div>
                 <h3 className="text-[20px] font-bold text-white tracking-wide">Mohivx Messenger</h3>
-                <p className="text-[12px] text-[#2561fb] font-semibold mt-[2px]">Version 1.1.0 (Telegram MTProto Enabled)</p>
-                <p className="text-[12px] text-white/60 mt-[8px] max-w-[420px] leading-relaxed">
-                  تطبيق المراسلة الموحد لنظام Windows 11 — تجربة مستوحاة بدقة بصرية متطابقة من Beeper، مع الحفاظ الكامل على استقلالية الكود والأمان المحلي المشفر.
+                <p className="text-[12px] text-[#2561fb] font-semibold mt-[2px]">Version 1.1.0 (Bilingual AR / EN)</p>
+                <p className="text-[12px] text-white/60 mt-[8px] max-w-[440px] leading-relaxed">
+                  {language === 'ar'
+                    ? 'تطبيق المراسلة الموحد لنظام Windows 11 — تجربة مستوحاة بدقة بصرية متطابقة من Beeper، مع الحفاظ الكامل على استقلالية الكود والأمان المحلي المشفر ودعم ثنائي اللغة.'
+                    : 'The unified messaging desktop application for Windows 11 — 1:1 Beeper visual parity with independent architecture, local encryption, and bilingual Arabic/English support.'}
                 </p>
               </div>
 
-              <div className="p-[14px] bg-white/5 border border-white/5 rounded-[12px] w-full max-w-[400px] text-left text-[12px] space-y-[6px]">
+              <div className="p-[14px] bg-white/5 border border-white/5 rounded-[12px] w-full max-w-[420px] text-left text-[12px] space-y-[6px]">
                 <div className="flex justify-between">
-                  <span className="text-white/50">المطور:</span>
+                  <span className="text-white/50">{t('developer')}:</span>
                   <span className="text-white font-medium">Mohivx</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">المستودع:</span>
+                  <span className="text-white/50">{t('repository')}:</span>
                   <span className="text-[#2561fb] font-medium">github.com/Mohivx/Mohivx-Messenger</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50">البيئة:</span>
+                  <span className="text-white/50">{t('environment')}:</span>
                   <span className="text-white font-medium">Windows 11 x64</span>
                 </div>
               </div>

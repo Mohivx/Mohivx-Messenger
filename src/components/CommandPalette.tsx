@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Thread } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   threads,
   onSelectThread,
 }) => {
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
@@ -36,6 +38,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       t.lastMessageSnippet.toLowerCase().includes(query.toLowerCase())
   );
 
+  const filterChips = [
+    { id: 'Accounts', label: t('filterAccounts') },
+    { id: 'Message type', label: t('filterMessageType') },
+    { id: 'Time period', label: t('filterTimePeriod') },
+    { id: 'Media', label: t('filterMedia') },
+  ];
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-start justify-center pt-[100px] z-50 select-none animate-in fade-in duration-150">
       <div
@@ -53,11 +62,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search chats..."
+            placeholder={t('searchChatsPlaceholder')}
             className="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder-white/40"
           />
           <div className="flex items-center gap-[4px] text-[11px] text-white/40 font-mono">
-            <span>Commands</span>
+            <span>{t('commandsKbd')}</span>
             <kbd className="px-[5px] py-[2px] bg-white/10 rounded-[4px] text-white/80">Ctrl</kbd>
             <kbd className="px-[5px] py-[2px] bg-white/10 rounded-[4px] text-white/80">J</kbd>
           </div>
@@ -65,17 +74,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
         {/* Filter Chips Bar */}
         <div className="px-[16px] py-[10px] flex items-center gap-[8px] border-b border-white/5 overflow-x-auto text-[12px]">
-          {['Accounts', 'Message type', 'Time period', 'Media'].map((f) => (
+          {filterChips.map((f) => (
             <button
-              key={f}
-              onClick={() => setActiveFilter(activeFilter === f ? null : f)}
+              key={f.id}
+              onClick={() => setActiveFilter(activeFilter === f.id ? null : f.id)}
               className={`px-[10px] py-[4px] rounded-full flex items-center gap-[4px] transition-colors ${
-                activeFilter === f
+                activeFilter === f.id
                   ? 'bg-[#2561fb] text-white'
                   : 'bg-white/5 hover:bg-white/10 text-white/70'
               }`}
             >
-              <span>{f}</span>
+              <span>{f.label}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[10px] h-[10px] opacity-70">
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -86,7 +95,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         {/* Results List */}
         <div className="max-h-[380px] overflow-y-auto p-[8px] space-y-[2px]">
           <div className="px-[8px] py-[4px] text-[11px] font-medium text-white/40">
-            {query ? 'SEARCH RESULTS' : 'RECENT CHATS'}
+            {query ? t('searchResults') : t('recentChats')}
           </div>
 
           {filteredThreads.map((t) => (

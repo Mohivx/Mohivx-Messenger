@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Thread, Message } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ConversationViewProps {
   thread: Thread | null;
@@ -15,6 +16,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   onSendMessage,
   onAddReaction,
 }) => {
+  const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -46,9 +48,9 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         <div className="w-[64px] h-[64px] rounded-full bg-white/5 flex items-center justify-center mb-[16px]">
           <img src="./assets/icon-128.png" alt="Mohivx" className="w-[42px] h-[42px] object-contain opacity-70" />
         </div>
-        <h2 className="text-[18px] font-semibold text-white/90 mb-[4px]">Mohivx Messenger</h2>
+        <h2 className="text-[18px] font-semibold text-white/90 mb-[4px]">{t('emptyTitle')}</h2>
         <p className="text-[13px] text-white/50 max-w-[320px]">
-          اختر محادثة من القائمة للبدء أو اضغط على Ctrl + K للبحث في جميع الرسائل.
+          {t('emptyDesc')}
         </p>
       </div>
     );
@@ -83,7 +85,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         {/* Right Feedback Pill */}
         <div className="titlebar-no-drag">
           <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
-            Feedback?
+            {t('feedback')}
           </button>
         </div>
       </div>
@@ -93,7 +95,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         {/* Sticky Date Separator */}
         <div className="flex items-center justify-center my-[8px]">
           <div className="bg-[#000000] border border-[#232326] text-[#9b9ba2] text-[11px] font-semibold px-[12px] py-[3px] rounded-full shadow-sm">
-            Today
+            {t('todayPill')}
           </div>
         </div>
 
@@ -218,7 +220,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
       <div className="h-[52px] px-[12px] pb-[8px] pt-[4px] bg-[#000000] flex items-center gap-[8px] z-20">
         {/* Left Attachment '+' Button */}
         <button
-          title="Add attachment"
+          title={t('addAttachment')}
           className="w-[36px] h-[36px] rounded-full bg-[#1c1c1d] hover:bg-white/10 flex items-center justify-center text-[#9b9ba2] hover:text-white transition-colors shrink-0"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-[18px] h-[18px]">
@@ -238,7 +240,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={`Message ${thread.title} on ${thread.networkId}`}
+            placeholder={t('messagePlaceholder', { name: thread.title, network: thread.networkId })}
             className="flex-1 bg-transparent border-none outline-none text-[13px] text-white placeholder-white/40 font-normal"
           />
 
@@ -255,7 +257,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             </button>
 
             {/* Record Audio Button */}
-            <button className="text-[#9b9ba2] hover:text-white transition-colors">
+            <button title={t('recordAudio')} className="text-[#9b9ba2] hover:text-white transition-colors">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -270,7 +272,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         <button
           onClick={handleSend}
           disabled={!inputText.trim()}
-          title="Send message (Enter)"
+          title={t('send')}
           className={`w-[36px] h-[36px] rounded-full flex items-center justify-center transition-all shrink-0 ${
             inputText.trim()
               ? 'bg-[#2561fb] hover:bg-[#1a50db] text-white shadow-md'

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Thread, ViewFilter, NetworkId } from '../types';
 import { NetworkIcon } from './NetworkIcon';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ThreadListProps {
   threads: Thread[];
@@ -25,15 +26,19 @@ export const ThreadList: React.FC<ThreadListProps> = ({
   onOpenNewChat,
   activeNetwork,
 }) => {
+  const { t } = useLanguage();
   const [inboxDropdownOpen, setInboxDropdownOpen] = useState(false);
 
-  const filterTitleMap: Record<ViewFilter, string> = {
-    inbox: 'Inbox',
-    archive: 'Archive',
-    reminders: 'Reminders',
-    sendlater: 'Send Later',
-    requests: 'Requests',
-    lowpriority: 'Low Priority',
+  const getFilterTitle = (filter: ViewFilter): string => {
+    switch (filter) {
+      case 'inbox': return t('inbox');
+      case 'archive': return t('archive');
+      case 'reminders': return t('reminders');
+      case 'sendlater': return t('sendLater');
+      case 'requests': return t('requests');
+      case 'lowpriority': return t('lowPriority');
+      default: return t('inbox');
+    }
   };
 
   const displayedThreads = threads.filter((t) => {
@@ -53,7 +58,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
             onClick={() => setInboxDropdownOpen(!inboxDropdownOpen)}
             className="flex items-center gap-[4px] text-[13px] font-semibold text-[#f6f6f6] hover:text-white transition-colors"
           >
-            <span>{filterTitleMap[currentFilter]}</span>
+            <span>{getFilterTitle(currentFilter)}</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-[12px] h-[12px] opacity-70">
               <path d="M6 9l6 6 6-6" />
             </svg>
@@ -63,7 +68,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
           {inboxDropdownOpen && (
             <div className="absolute top-[28px] left-0 w-[190px] bg-[#1c1c1e] border border-white/10 rounded-[12px] shadow-2xl py-[6px] z-50 text-[13px]">
               <div className="px-[12px] py-[6px] text-white/50 text-[11px] font-medium tracking-wide">
-                SPACES & FILTERS
+                {t('spacesAndFilters')}
               </div>
               <button
                 onClick={() => setInboxDropdownOpen(false)}
@@ -73,7 +78,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span>Inbox</span>
+                  <span>{t('inbox')}</span>
                 </div>
                 <span className="text-[11px] text-white/40">Ctrl 1</span>
               </button>
@@ -84,20 +89,20 @@ export const ThreadList: React.FC<ThreadListProps> = ({
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px] opacity-0">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <span>Archive</span>
+                <span>{t('archive')}</span>
               </button>
               <div className="h-[1px] bg-white/10 my-[4px]" />
               <button
                 onClick={() => setInboxDropdownOpen(false)}
                 className="w-full text-left px-[12px] py-[6px] text-[#f6f6f6] hover:bg-white/10"
               >
-                Select Chats
+                {t('selectChats')}
               </button>
               <button
                 onClick={() => setInboxDropdownOpen(false)}
                 className="w-full text-left px-[12px] py-[6px] text-[#f6f6f6] hover:bg-white/10"
               >
-                Merge Chats
+                {t('mergeChats')}
               </button>
             </div>
           )}
@@ -108,7 +113,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
           {/* Filter Unread Toggle */}
           <button
             onClick={onToggleFilterUnread}
-            title="Filter Unread"
+            title={t('filterUnread')}
             className={`w-[32px] h-[22px] rounded-[12px] flex items-center justify-center transition-all ${
               filterUnreadOnly
                 ? 'bg-[#2561fb] text-white'
@@ -123,7 +128,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
           {/* Search Chats */}
           <button
             onClick={onOpenSearch}
-            title="Search Chats (Ctrl+K)"
+            title={t('searchChats')}
             className="w-[30px] h-[22px] rounded-[6px] flex items-center justify-center text-[#f6f6f6]/80 hover:text-white hover:bg-white/10 transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]">
@@ -135,7 +140,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
           {/* New Chat */}
           <button
             onClick={onOpenNewChat}
-            title="New Chat (Ctrl+N)"
+            title={t('newChat')}
             className="w-[30px] h-[22px] rounded-[6px] flex items-center justify-center text-[#f6f6f6]/80 hover:text-white hover:bg-white/10 transition-colors"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[15px] h-[15px]">
@@ -156,7 +161,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
               </svg>
             </div>
           </div>
-          <span className="text-[12px] font-semibold text-[#ededed] mt-[6px]">Premium</span>
+          <span className="text-[12px] font-semibold text-[#ededed] mt-[6px]">{t('premium')}</span>
         </div>
       </div>
 
@@ -164,7 +169,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
       <div className="flex-1 overflow-y-auto px-[6px] py-[4px] space-y-[2px]">
         {displayedThreads.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[200px] text-center px-[16px]">
-            <p className="text-[13px] text-white/50">No conversations in {filterTitleMap[currentFilter]}</p>
+            <p className="text-[13px] text-white/50">{t('noConversationsIn', { filter: getFilterTitle(currentFilter) })}</p>
           </div>
         ) : (
           displayedThreads.map((thread) => {
