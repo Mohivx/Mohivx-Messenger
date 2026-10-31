@@ -39,9 +39,18 @@
 
 يمكنك تحميل مثبت البرنامج الرسمي مباشرة من صفحة [GitHub Releases](https://github.com/Mohivx/Mohivx-Messenger/releases):
 
-1. حمّل ملف: `Mohivx Messenger-Setup-1.0.0.exe`.
-2. شغّل ملف التثبيت على نظام Windows 11.
-3. سينشئ البرنامج تلقائياً اختصارات سطح المكتب وقائمة Start وصندوق النظام (Tray).
+1. **المثبت الكامل (NSIS Installer):** حمّل `Mohivx Messenger-Setup-1.1.0.exe` (يتضمن خيارات التثبيت واختصارات سطح المكتب وقائمة Start وبرنامج إلغاء التثبيت).
+2. **النسخة المحمولة (Portable EXE):** حمّل `Mohivx Messenger-Portable-1.1.0.exe` (تعمل مباشرة بدون تثبيت).
+
+---
+
+## ⚡ الميزات الجديدة في الإصدار v1.1.0 (Phase 2):
+- ✈️ **تكامل Telegram MTProto الحي:** دعم تسجيل الدخول الآمن برقم الهاتف، رمز التحقق OTP، والتحقق بخطوتين (2FA) عبر مكتبة GramJS الرسمية.
+- 🗄️ **قاعدة بيانات SQLite محلية دائمة:** حفظ المحادثات وجهات الاتصال وسجل الرسائل في `%APPDATA%\MohivxMessenger\storage\mohivx.sqlite`.
+- 🔐 **تشفير الجلسات عبر Windows DPAPI:** حماية رموز الجلسات باستخدام `safeStorage` على Windows 11.
+- 🔔 **استقبال وإرسال الرسائل الحية:** دعم الاستماع لأحداث `NewMessage` في تيليجرام وعرض إشعارات الويندوز اللحظية.
+- 📦 **فصل حزم التثبيت:** توفير ملفي Setup و Portable منفصلين ومستقلين تماماً.
+- 📄 تفاصيل إضافية في تقرير: [TELEGRAM-INTEGRATION.md](TELEGRAM-INTEGRATION.md) وتقرير التدقيق: [FINAL-AUDIT.md](FINAL-AUDIT.md).
 
 ---
 

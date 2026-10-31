@@ -112,7 +112,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           <div className="text-[11px] text-white/40 px-[8px]">
-            Mohivx Messenger v1.0.0
+            Mohivx Messenger v1.1.0
           </div>
         </div>
 
@@ -273,7 +273,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <img src="./assets/icon-128.png" alt="Mohivx Logo" className="w-[84px] h-[84px] object-contain drop-shadow-xl" />
               <div>
                 <h3 className="text-[20px] font-bold text-white tracking-wide">Mohivx Messenger</h3>
-                <p className="text-[12px] text-[#2561fb] font-semibold mt-[2px]">Version 1.0.0 (Production Release)</p>
+                <p className="text-[12px] text-[#2561fb] font-semibold mt-[2px]">Version 1.1.0 (Telegram MTProto Enabled)</p>
                 <p className="text-[12px] text-white/60 mt-[8px] max-w-[420px] leading-relaxed">
                   تطبيق المراسلة الموحد لنظام Windows 11 — تجربة مستوحاة بدقة بصرية متطابقة من Beeper، مع الحفاظ الكامل على استقلالية الكود والأمان المحلي المشفر.
                 </p>

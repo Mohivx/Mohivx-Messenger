@@ -1,8 +1,18 @@
 import { IMessengerConnector, NetworkId, ConnectorMessage, ConnectorThread } from './types';
+import { TelegramConnector } from './telegram';
+import { LocalDatabase } from '../database';
 
 export class ConnectorManager {
   private connectors = new Map<NetworkId, IMessengerConnector>();
   private messageListeners: ((msg: ConnectorMessage) => void)[] = [];
+  public telegram: TelegramConnector;
+  public db: LocalDatabase;
+
+  constructor(database: LocalDatabase) {
+    this.db = database;
+    this.telegram = new TelegramConnector(database);
+    this.register(this.telegram);
+  }
 
   public register(connector: IMessengerConnector): void {
     this.connectors.set(connector.networkId, connector);
@@ -15,26 +25,15 @@ export class ConnectorManager {
     return this.connectors.get(networkId);
   }
 
-  public async connectNetwork(networkId: NetworkId, credentials: any): Promise<boolean> {
-    const conn = this.connectors.get(networkId);
-    if (!conn) throw new Error(`Connector for ${networkId} is not installed`);
-    return await conn.connect(credentials);
+  public async autoConnectAll(): Promise<{ telegram: boolean }> {
+    const tg = await this.telegram.autoConnect();
+    return { telegram: tg };
   }
 
   public async sendMessage(networkId: NetworkId, threadId: string, text: string): Promise<ConnectorMessage> {
     const conn = this.connectors.get(networkId);
     if (!conn || !conn.isConnected()) {
-      // Local fallback
-      return {
-        id: `local-${Date.now()}`,
-        threadId,
-        senderId: 'me',
-        senderName: 'Mohivx',
-        content: text,
-        timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
-        isOutgoing: true,
-        networkId,
-      };
+      throw new Error(`Service ${networkId} is not connected.`);
     }
     return await conn.sendMessage(threadId, text);
   }

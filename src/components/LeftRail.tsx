@@ -168,6 +168,7 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           onMouseLeave={() => setTooltip(null)}
         >
           <button
+            data-testid="rail-network-telegram"
             onClick={() => onSelectNetwork(activeNetwork === 'telegram' ? null : 'telegram')}
             className={`w-[36px] h-[36px] rounded-[14px] p-[4px] flex items-center justify-center transition-all ${
               activeNetwork === 'telegram' ? 'bg-white/20 ring-2 ring-[#2EA4DB]' : 'hover:bg-white/10'

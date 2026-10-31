@@ -41,6 +41,11 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
   );
 
   const handleConnect = (net: NetworkId) => {
+    if (net === 'telegram') {
+      onConnectNetwork('telegram');
+      onClose();
+      return;
+    }
     setConnectingNetwork(net);
     setTimeout(() => {
       onConnectNetwork(net);

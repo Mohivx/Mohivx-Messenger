@@ -1,10 +1,12 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, Notification } from 'electron';
 import path from 'path';
+import { LocalDatabase } from './database';
 import { ConnectorManager } from './connectors/manager';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
-const connectorManager = new ConnectorManager();
+const db = new LocalDatabase();
+const connectorManager = new ConnectorManager(db);
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -36,12 +38,7 @@ function createMainWindow() {
     console.log(`[Renderer ${level}] ${message} (${sourceId}:${line})`);
   });
 
-  mainWindow.webContents.on('render-process-gone', (_, details) => {
-    console.log('[Render process gone]', details);
-  });
-
   mainWindow.on('closed', () => {
-    console.log('[Window closed]');
     mainWindow = null;
   });
 }
@@ -94,16 +91,63 @@ ipcMain.on('notify', (_, { title, body }) => {
   }
 });
 
-app.whenReady().then(() => {
-  console.log('App ready triggered');
+// Telegram IPC Handlers
+ipcMain.handle('tg-send-code', async (_, { phoneNumber, apiId, apiHash }) => {
+  return await connectorManager.telegram.sendCode(phoneNumber, apiId, apiHash);
+});
+
+ipcMain.handle('tg-signin-code', async (_, { code }) => {
+  return await connectorManager.telegram.signInWithCode(code);
+});
+
+ipcMain.handle('tg-signin-2fa', async (_, { password }) => {
+  return await connectorManager.telegram.signInWith2FA(password);
+});
+
+ipcMain.handle('tg-status', async () => {
+  return { connected: connectorManager.telegram.isConnected() };
+});
+
+ipcMain.handle('tg-sync-threads', async (_, { limit }) => {
+  return await connectorManager.telegram.syncThreads(limit);
+});
+
+ipcMain.handle('tg-get-messages', async (_, { threadId, limit }) => {
+  return await connectorManager.telegram.getMessages(threadId, limit);
+});
+
+ipcMain.handle('tg-send-message', async (_, { threadId, text }) => {
+  return await connectorManager.telegram.sendMessage(threadId, text);
+});
+
+ipcMain.handle('tg-disconnect', async () => {
+  await connectorManager.telegram.disconnect();
+  return { success: true };
+});
+
+app.whenReady().then(async () => {
+  console.log('[App] Initializing database and connectors...');
   try {
-    createMainWindow();
-    console.log('Window created');
-    createTray();
-    console.log('Tray created');
-  } catch (err) {
-    console.error('Startup error:', err);
+    await db.initialize();
+    await connectorManager.autoConnectAll();
+  } catch (e) {
+    console.warn('[App] Auto-connect warning:', e);
   }
+
+  createMainWindow();
+  createTray();
+
+  // Forward incoming real-time messages to renderer
+  connectorManager.onMessage((msg) => {
+    mainWindow?.webContents.send('incoming-message', msg);
+    if (Notification.isSupported() && !mainWindow?.isFocused()) {
+      new Notification({
+        title: msg.senderName || 'Telegram',
+        body: msg.content,
+        icon: path.join(__dirname, '../assets/icon.ico'),
+      }).show();
+    }
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow();

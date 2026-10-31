@@ -1,8 +1,8 @@
 import { Thread, Message, Account, NetworkInfo } from '../types';
 
 export const INITIAL_NETWORKS: NetworkInfo[] = [
-  { id: 'telegram', name: 'Telegram', color: '#2EA4DB', iconBg: '#2EA4DB', category: 'chat', connected: true, status: 'online', unreadCount: 48 },
-  { id: 'whatsapp', name: 'WhatsApp', color: '#48C95F', iconBg: '#48C95F', category: 'chat', connected: true, status: 'online', unreadCount: 17 },
+  { id: 'telegram', name: 'Telegram', color: '#2EA4DB', iconBg: '#2EA4DB', category: 'chat', connected: false, status: 'disconnected', unreadCount: 0 },
+  { id: 'whatsapp', name: 'WhatsApp', color: '#48C95F', iconBg: '#48C95F', category: 'chat', connected: false, status: 'disconnected', unreadCount: 0 },
   { id: 'discord', name: 'Discord', color: '#5865F2', iconBg: '#5865F2', category: 'social', connected: false, status: 'disconnected' },
   { id: 'slack', name: 'Slack', color: '#4A154B', iconBg: '#4A154B', category: 'work', connected: false, status: 'disconnected' },
   { id: 'signal', name: 'Signal', color: '#3542FF', iconBg: '#3542FF', category: 'chat', connected: false, status: 'disconnected' },
@@ -19,24 +19,6 @@ export const INITIAL_ACCOUNTS: Account[] = [
     networkId: 'matrix',
     username: 'mohivx',
     displayName: 'Mohivx',
-    avatarUrl: './assets/icon-128.png',
-    connectedAt: '2026-10-31',
-    status: 'active',
-  },
-  {
-    id: 'acc-tg-mohivx',
-    networkId: 'telegram',
-    username: '@Mohivx1',
-    displayName: 'Mohivx Telegram',
-    avatarUrl: './assets/icon-128.png',
-    connectedAt: '2026-10-31',
-    status: 'active',
-  },
-  {
-    id: 'acc-wa-mohivx',
-    networkId: 'whatsapp',
-    username: '+966 55 952 0809',
-    displayName: 'Mohivx WhatsApp',
     avatarUrl: './assets/icon-128.png',
     connectedAt: '2026-10-31',
     status: 'active',
