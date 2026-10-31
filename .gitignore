@@ -33,6 +33,13 @@ debug.js
 .env
 .env.local
 
+# Local storage and sessions
+storage/
+*.sqlite
+*.enc
+*.session
+*.session-journal
+
 # OS Files
 Thumbs.db
 Desktop.ini

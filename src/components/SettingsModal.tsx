@@ -7,6 +7,7 @@ interface SettingsModalProps {
   onClose: () => void;
   accounts: Account[];
   onOpenAddAccount: () => void;
+  onDisconnectAccount?: (account: Account) => void;
 }
 
 type SettingsTab =
@@ -27,6 +28,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   accounts,
   onOpenAddAccount,
+  onDisconnectAccount,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>('accounts');
   const [showNetworkIcons, setShowNetworkIcons] = useState(true);
@@ -154,6 +156,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <span className="text-[11px] text-green-400 bg-green-500/10 px-[8px] py-[2px] rounded-full font-medium">
                         Connected
                       </span>
+                      {onDisconnectAccount && acc.networkId === 'telegram' && (
+                        <button
+                          data-testid="disconnect-telegram-btn"
+                          onClick={() => onDisconnectAccount(acc)}
+                          className="text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10 px-[8px] py-[3px] rounded-[6px] border border-red-500/20 transition-all font-medium"
+                        >
+                          Disconnect
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

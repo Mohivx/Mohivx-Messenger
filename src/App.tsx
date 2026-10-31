@@ -309,6 +309,23 @@ export const App: React.FC = () => {
     await checkTelegramStatus();
   };
 
+  const handleDisconnectAccount = async (account: Account) => {
+    if (account.networkId === 'telegram') {
+      try {
+        const api = (window as any).mohivxApi;
+        await api?.telegram?.disconnect();
+        setIsTelegramConnected(false);
+        setNetworks((prev) =>
+          prev.map((n) => (n.id === 'telegram' ? { ...n, connected: false, status: 'disconnected', unreadCount: 0 } : n))
+        );
+        setAccounts((prev) => prev.filter((a) => a.id !== account.id));
+        setThreads((prev) => prev.filter((t) => t.networkId !== 'telegram'));
+      } catch (err) {
+        console.error('Error disconnecting Telegram account:', err);
+      }
+    }
+  };
+
   const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
   const currentMessages = selectedThreadId ? messagesMap[selectedThreadId] || [] : [];
   const totalUnread = threads.reduce((acc, t) => acc + t.unreadCount, 0);
@@ -375,6 +392,7 @@ export const App: React.FC = () => {
           setSettingsOpen(false);
           setAddAccountOpen(true);
         }}
+        onDisconnectAccount={handleDisconnectAccount}
       />
 
       <AddAccountModal

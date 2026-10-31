@@ -22,6 +22,8 @@ export class TelegramConnector implements IMessengerConnector {
   private sessionFilePath: string;
   private messageCallbacks: ((msg: ConnectorMessage) => void)[] = [];
   private activeChallenge: TelegramAuthChallenge | null = null;
+  private activeApiId: number = DEFAULT_API_ID;
+  private activeApiHash: string = DEFAULT_API_HASH;
   private db: LocalDatabase;
 
   constructor(database: LocalDatabase) {
@@ -66,6 +68,9 @@ export class TelegramConnector implements IMessengerConnector {
   }
 
   public async sendCode(phoneNumber: string, apiId = DEFAULT_API_ID, apiHash = DEFAULT_API_HASH): Promise<{ phoneCodeHash: string }> {
+    this.activeApiId = apiId;
+    this.activeApiHash = apiHash;
+
     if (this.client) {
       try {
         await this.client.disconnect();
@@ -108,7 +113,10 @@ export class TelegramConnector implements IMessengerConnector {
       this.setupEventListener();
       return { success: true, user };
     } catch (err: any) {
-      if (err.message && err.message.includes('SESSION_PASSWORD_NEEDED')) {
+      if (
+        (err.message && err.message.includes('SESSION_PASSWORD_NEEDED')) ||
+        err.errorMessage === 'SESSION_PASSWORD_NEEDED'
+      ) {
         return { success: false, requires2FA: true };
       }
       throw err;
@@ -117,7 +125,19 @@ export class TelegramConnector implements IMessengerConnector {
 
   public async signInWith2FA(password: string): Promise<{ success: boolean; user?: any }> {
     if (!this.client) throw new Error('Telegram client not initialized');
-    const user = await (this.client as any).signInUserWithPassword({ password });
+    const apiId = this.activeApiId || DEFAULT_API_ID;
+    const apiHash = this.activeApiHash || DEFAULT_API_HASH;
+
+    const user = await this.client.signInWithPassword(
+      { apiId, apiHash },
+      {
+        password: async () => password,
+        onError: async (err: any) => {
+          throw err;
+        },
+      }
+    );
+
     await this.persistSession();
     this.setupEventListener();
     return { success: true, user };
