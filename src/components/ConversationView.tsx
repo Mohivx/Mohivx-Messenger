@@ -57,24 +57,24 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   return (
     <div className="flex-1 h-[calc(100vh-16px)] bg-[#000000] rounded-[10px] m-[8px] flex flex-col overflow-hidden relative select-none">
       {/* Top Header Bar */}
-      <div className="h-[48px] px-[16px] flex items-center justify-between border-b border-white/5 z-20 titlebar-drag-region">
+      <div className="h-[52px] px-[16px] flex items-center justify-between border-b border-white/5 z-20 titlebar-drag-region">
         <div className="w-[80px]" /> {/* Spacer */}
 
-        {/* Center Recipient Pill (35px) */}
+        {/* Center Recipient Pill */}
         <div className="titlebar-no-drag flex items-center gap-[8px] cursor-pointer group">
           <div className="relative">
             <img
               src={thread.avatarUrl}
               alt={thread.title}
-              className="w-[28px] h-[28px] rounded-full object-cover"
+              className="w-[32px] h-[32px] rounded-full object-cover bg-white/10"
             />
             <div className="absolute -bottom-[2px] -right-[2px]">
-              <NetworkIcon network={thread.networkId} size={12} badge />
+              <NetworkIcon network={thread.networkId} size={14} badge />
             </div>
           </div>
-          <div className="bg-[#232323] hover:bg-[#2a2a2a] px-[12px] py-[5px] rounded-[14px] flex items-center gap-[6px] shadow-sm transition-colors">
+          <div className="bg-[#232323] hover:bg-[#2a2a2a] px-[12px] py-[5px] rounded-[14px] flex items-center gap-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.1)] transition-colors">
             <span className="text-[13px] font-semibold text-white">{thread.title}</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-[12px] h-[12px] text-white/50">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-[12px] h-[12px] text-white/40">
               <path d="M6 9l6 6 6-6" />
             </svg>
           </div>
@@ -82,7 +82,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
         {/* Right Feedback Pill */}
         <div className="titlebar-no-drag">
-          <button className="text-[11px] font-medium text-white/90 bg-white/5 hover:bg-white/10 px-[10px] py-[4px] rounded-[6px] border border-white/10 transition-colors">
+          <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
             Feedback?
           </button>
         </div>

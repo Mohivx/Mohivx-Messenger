@@ -11,12 +11,17 @@ const connectorManager = new ConnectorManager(db);
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 function createMainWindow() {
+  const isOffscreen = process.argv.includes('--offscreen');
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 900,
     minHeight: 600,
     frame: false,
+    show: true,
+    focusable: !isOffscreen,
+    x: isOffscreen ? -30000 : undefined,
+    y: isOffscreen ? -30000 : undefined,
     titleBarStyle: 'hidden',
     backgroundColor: '#232323',
     icon: path.join(__dirname, '../assets/icon.ico'),

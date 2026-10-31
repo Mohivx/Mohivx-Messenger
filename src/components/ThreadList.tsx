@@ -217,7 +217,13 @@ export const ThreadList: React.FC<ThreadListProps> = ({
 
                     {/* Unread Counter Badge */}
                     {thread.unreadCount > 0 && (
-                      <div className="bg-[#2561fb] text-white text-[10px] leading-[14px] font-semibold px-[5px] py-[1px] rounded-[20px] shrink-0 min-w-[20px] text-center">
+                      <div
+                        className={`text-[10px] leading-[14px] font-semibold px-[5px] py-[1px] rounded-[20px] shrink-0 min-w-[20px] text-center ${
+                          thread.isMuted
+                            ? 'bg-white/20 text-white/70'
+                            : 'bg-[#2561fb] text-white shadow-sm'
+                        }`}
+                      >
                         {thread.unreadCount > 999 ? '999+' : thread.unreadCount}
                       </div>
                     )}
