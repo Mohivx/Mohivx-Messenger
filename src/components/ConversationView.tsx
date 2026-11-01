@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Thread, Message } from '../types';
 import { NetworkIcon } from './NetworkIcon';
 import { useLanguage } from '../i18n/LanguageContext';
+import mohivxLogo from '../assets/icon-128.png';
 
 interface ConversationViewProps {
   thread: Thread | null;
@@ -46,7 +47,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     return (
       <div className="flex-1 h-screen bg-[#000000] rounded-[10px] m-[8px] flex flex-col items-center justify-center text-center p-[20px] select-none">
         <div className="w-[64px] h-[64px] rounded-full bg-white/5 flex items-center justify-center mb-[16px]">
-          <img src="./assets/icon-128.png" alt="Mohivx" className="w-[42px] h-[42px] object-contain opacity-70" />
+          <img src={mohivxLogo} alt="Mohivx" className="w-[42px] h-[42px] object-contain opacity-80" />
         </div>
         <h2 className="text-[18px] font-semibold text-white/90 mb-[4px]">{t('emptyTitle')}</h2>
         <p className="text-[13px] text-white/50 max-w-[320px]">

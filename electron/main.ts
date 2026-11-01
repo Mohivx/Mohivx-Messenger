@@ -1,7 +1,13 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, Notification } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, Notification, nativeImage } from 'electron';
 import path from 'path';
+import fs from 'fs';
 import { LocalDatabase } from './database';
 import { ConnectorManager } from './connectors/manager';
+
+// Ensure proper Windows 11 taskbar grouping and icon display
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.mohivx.messenger');
+}
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -10,8 +16,35 @@ const connectorManager = new ConnectorManager(db);
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
+function getAppIcon(): Electron.NativeImage | undefined {
+  const possiblePaths = [
+    path.join(__dirname, '../assets/icon.ico'),
+    path.join(__dirname, '../assets/icon.png'),
+    path.join(process.resourcesPath, 'assets/icon.ico'),
+    path.join(process.resourcesPath, 'assets/icon.png'),
+    path.join(process.resourcesPath, 'app.asar/assets/icon.ico'),
+    path.join(process.resourcesPath, 'app.asar/assets/icon.png'),
+    path.join(__dirname, '../../assets/icon.ico'),
+    path.join(__dirname, '../../assets/icon.png'),
+  ];
+
+  for (const p of possiblePaths) {
+    try {
+      if (fs.existsSync(p)) {
+        const img = nativeImage.createFromPath(p);
+        if (!img.isEmpty()) {
+          return img;
+        }
+      }
+    } catch {}
+  }
+  return undefined;
+}
+
 function createMainWindow() {
   const isOffscreen = process.argv.includes('--offscreen');
+  const appIcon = getAppIcon();
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -24,7 +57,7 @@ function createMainWindow() {
     y: isOffscreen ? -30000 : undefined,
     titleBarStyle: 'hidden',
     backgroundColor: '#232323',
-    icon: path.join(__dirname, '../assets/icon.ico'),
+    icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -32,6 +65,10 @@ function createMainWindow() {
       sandbox: false,
     },
   });
+
+  if (appIcon && mainWindow) {
+    mainWindow.setIcon(appIcon);
+  }
 
   if (isDev && process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
@@ -49,8 +86,8 @@ function createMainWindow() {
 }
 
 function createTray() {
-  const iconPath = path.join(__dirname, '../assets/icon-32.png');
-  tray = new Tray(iconPath);
+  const appIcon = getAppIcon() || path.join(__dirname, '../assets/icon-32.png');
+  tray = new Tray(appIcon);
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Open Mohivx Messenger',

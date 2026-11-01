@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Account } from '../types';
 import { NetworkIcon } from './NetworkIcon';
 import { useLanguage } from '../i18n/LanguageContext';
+import mohivxIcon64 from '../assets/icon-64.png';
+import mohivxLogo128 from '../assets/icon-128.png';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -77,13 +79,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             {/* User Profile Card */}
             <div className="flex items-center gap-[10px] p-[8px] rounded-[10px] bg-white/5 mb-[16px]">
-              <img src="./assets/icon-64.png" alt="Mohivx" className="w-[36px] h-[36px] rounded-full object-cover" />
+              <img src={mohivxIcon64} alt="Mohivx" className="w-[36px] h-[36px] rounded-full object-contain bg-white/5 p-[2px]" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] font-semibold text-white">Mohivx</span>
                   <span className="text-[10px] font-semibold text-green-400 bg-green-500/10 px-[5px] py-[1px] rounded-full">{t('active')}</span>
                 </div>
-                <div className="text-[11px] text-white/50 truncate">mohivx@gmail.com</div>
+                <div className="text-[11px] text-white/50 truncate">Mohivx Messenger Client</div>
               </div>
             </div>
 
@@ -140,34 +142,56 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               <div className="space-y-[10px]">
-                {accounts.map((acc) => (
-                  <div
-                    key={acc.id}
-                    className="p-[12px] rounded-[12px] bg-white/5 border border-white/5 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-[12px]">
-                      <NetworkIcon network={acc.networkId} size={36} />
-                      <div>
-                        <div className="text-[14px] font-semibold text-white">{acc.displayName}</div>
-                        <div className="text-[12px] text-white/50">{acc.username}</div>
+                {accounts.length === 0 ? (
+                  <div className="p-[36px] text-center bg-white/[0.02] border border-white/5 rounded-[14px]">
+                    <div className="w-[48px] h-[48px] mx-auto mb-[12px] rounded-full bg-white/5 flex items-center justify-center text-white/40">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[24px] h-[24px]">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                      </svg>
+                    </div>
+                    <p className="text-[13px] text-white/60 mb-[16px] max-w-[320px] mx-auto">
+                      {t('noAccountsConnected')}
+                    </p>
+                    <button
+                      onClick={onOpenAddAccount}
+                      className="px-[18px] py-[8px] bg-[#2561fb] hover:bg-[#1a50db] text-white text-[12px] font-semibold rounded-full shadow-md transition-all"
+                    >
+                      {t('addAccount')}
+                    </button>
+                  </div>
+                ) : (
+                  accounts.map((acc) => (
+                    <div
+                      key={acc.id}
+                      className="p-[12px] rounded-[12px] bg-white/5 border border-white/5 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-[12px]">
+                        <NetworkIcon network={acc.networkId} size={36} />
+                        <div>
+                          <div className="text-[14px] font-semibold text-white">{acc.displayName}</div>
+                          <div className="text-[12px] text-white/50">{acc.username}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-[8px]">
+                        <span className="text-[11px] text-green-400 bg-green-500/10 px-[8px] py-[2px] rounded-full font-medium">
+                          {t('connected')}
+                        </span>
+                        {onDisconnectAccount && acc.networkId === 'telegram' && (
+                          <button
+                            data-testid="disconnect-telegram-btn"
+                            onClick={() => onDisconnectAccount(acc)}
+                            className="text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10 px-[8px] py-[3px] rounded-[6px] border border-red-500/20 transition-all font-medium"
+                          >
+                            {t('disconnect')}
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-[8px]">
-                      <span className="text-[11px] text-green-400 bg-green-500/10 px-[8px] py-[2px] rounded-full font-medium">
-                        {t('connected')}
-                      </span>
-                      {onDisconnectAccount && acc.networkId === 'telegram' && (
-                        <button
-                          data-testid="disconnect-telegram-btn"
-                          onClick={() => onDisconnectAccount(acc)}
-                          className="text-[11px] text-red-400 hover:text-red-300 hover:bg-red-500/10 px-[8px] py-[3px] rounded-[6px] border border-red-500/20 transition-all font-medium"
-                        >
-                          {t('disconnect')}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -313,7 +337,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {activeTab === 'about' && (
             <div className="flex flex-col items-center justify-center text-center pt-[20px] space-y-[16px]">
-              <img src="./assets/icon-128.png" alt="Mohivx Logo" className="w-[84px] h-[84px] object-contain drop-shadow-xl" />
+              <img src={mohivxLogo128} alt="Mohivx Logo" className="w-[84px] h-[84px] object-contain drop-shadow-xl" />
               <div>
                 <h3 className="text-[20px] font-bold text-white tracking-wide">Mohivx Messenger</h3>
                 <p className="text-[12px] text-[#2561fb] font-semibold mt-[2px]">Version 1.1.0 (Bilingual AR / EN)</p>

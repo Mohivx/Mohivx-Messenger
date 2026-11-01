@@ -61,6 +61,7 @@ export const translations = {
     showNetworkIconsDesc: 'عرض شارة المنصة المصغرة على صور جهات الاتصال.',
     disconnect: 'تسجيل الخروج',
     connected: 'متصل',
+    noAccountsConnected: 'لا توجد شبكات مراسلة متصلة حالياً. اضغط على زر "إضافة حساب" للبدء.',
 
     // AddAccountModal
     addAccountTitle: 'إضافة حساب جديد',
@@ -177,6 +178,7 @@ export const translations = {
     showNetworkIconsDesc: 'Display small badges on contact avatars.',
     disconnect: 'Disconnect',
     connected: 'Connected',
+    noAccountsConnected: 'No messaging networks connected yet. Click "Add an Account" to get started.',
 
     // AddAccountModal
     addAccountTitle: 'Add an Account',

@@ -5,9 +5,9 @@
 </p>
 
 <p align="center">
-  <strong>تطبيق المراسلة الموحد لنظام Windows 11 — تجربة متطابقة مع Beeper بهوية برمجية مستقلة ودعم ثنائي اللغة (عربي / English)</strong>
+  <strong>تطبيق المراسلة الموحد الشامل لنظام Windows 11 — يجمع كل محادثاتك ورسائلك من جميع التطبيقات في مكان واحد بتطابق كامل مع Beeper</strong>
   <br />
-  <em>The Unified Desktop Messaging Experience for Windows 11 — 1:1 Beeper Parity with Independent Architecture & Full Bilingual Support (Arabic / English)</em>
+  <em>The All-in-One Unified Messaging Desktop Client for Windows 11 — All your chats and messages from every network in one place (1:1 Beeper Parity)</em>
 </p>
 
 <p align="center">
@@ -18,54 +18,67 @@
     <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License MIT" />
   </a>
   <img src="https://img.shields.io/badge/Platform-Windows%2011%20x64-0078D4.svg?style=flat-square" alt="Windows 11" />
-  <img src="https://img.shields.io/badge/Language-Arabic%20%7C%20English-purple.svg?style=flat-square" alt="Bilingual" />
+  <img src="https://img.shields.io/badge/Support-Arabic%20%7C%20English-purple.svg?style=flat-square" alt="Bilingual" />
 </p>
 
 ---
 
-## 🌟 نظرة عامة | Overview
+## 🌟 الرؤية والهدف | The Vision
 
-### بالعربية:
-**Mohivx Messenger** هو تطبيق مكتبي احترافي متكامل لنظام **Windows 11**، يجمع منصات المراسلة في واجهة واحدة موحدة وسريعة. تم بناؤه من الصفر بكود مستقل بالكامل مع الحفاظ على أعلى درجات التطابق البصري والوظيفي مع تطبيق **Beeper** المرجعي، ويشمل دعماً ثنائي اللغة بالكامل (العربية والإنجليزية) مع التبديل الفوري واتجاه النصوص الديناميكي (RTL/LTR).
+### 🇸🇦 بالعربية:
+**Mohivx Messenger** هو تطبيق المراسلة المكتبي الموحد والشامل لنظام **Windows 11**. فكرة التطبيق الجوهرية هي **جمع كافة شبكات ومحادثات المراسلة في مكان واحد وصندوق وارد موحد**:
+- لا داعي بعد اليوم لفتح عشرات البرامج المختلفة في آن واحد (WhatsApp, Telegram, Discord, Slack, Signal, Instagram, Google Messages, Messenger وغيرها).
+- محادثاتك ورسائلك من جميع التطبيقات تجتمع في واجهة واحدة سريعة ومنظمة.
+- تجربة بصرية ووظيفية متطابقة بنسبة 1:1 مع تطبيق **Beeper** المرجعي.
+- بنية برمجية مستقلة بالكامل 100% مع أمان وتشفير محلي شامل بدون خوادم طرف ثالث وسيطة.
+- دعم كامل ومتكامل للغتين العربية والإنجليزية مع التبديل اللحظي بنقرة واحدة وضبط ديناميكي لاتجاه النصوص (RTL / LTR).
 
-### In English:
-**Mohivx Messenger** is a desktop messaging client engineered for **Windows 11**, unifying your favorite chat networks into a single, high-performance interface. Built from scratch with an independent codebase, it achieves 1:1 visual and UX parity with **Beeper** while offering full bilingual support (Arabic and English) with instant toggle and dynamic RTL/LTR layout handling.
+### 🇺🇸 In English:
+**Mohivx Messenger** is the definitive unified messaging desktop application engineered for **Windows 11**. The core philosophy of the project is to **unify all your chat networks and conversations into a single, high-performance inbox**:
+- Stop juggling dozens of individual desktop apps (WhatsApp, Telegram, Discord, Slack, Signal, Instagram, Google Messages, Facebook Messenger, and more).
+- All your contacts, threads, and incoming messages live inside a cohesive, ultra-responsive workspace.
+- 1:1 visual and UX parity with **Beeper** on Windows 11.
+- Fully independent, from-scratch architecture with 100% local encryption and zero third-party telemetry or middleware servers.
+- Native bilingual support (Arabic & English) with instant toggle and dynamic bidirectional layout handling (`RTL / LTR`).
 
 ---
 
-## ✨ المميزات الرئيسية | Key Features
+## ✨ المميزات الرئيسية | Core Features
 
-### 1. تطابق بصري ووظيفي 1:1 مع Beeper (1:1 Parity)
-- **Left Rail (68px):** شريط تنقل جانبي يضم أيقونات الحسابات، المؤشرات الحية للحالة، زر إضافة حساب جديد، وزر الإعدادات.
-- **Thread List (252px):** قائمة المحادثات مع الفلاتر الذكية (Inbox, Archive, Reminders, Requests, Low Priority)، وفلتر غير المقروءة، والبحث (`Ctrl + K`).
-- **Conversation View:** بطاقة المحادثة المظلمة المنحنية، مع فقاعات الرسائل، مؤشرات القراءة، وأزرار الردود والتفاعلات.
-- **Settings & Modals:** نافذة إعدادات بـ 11 قسماً، ونافذة بدء محادثة جديدة (`Ctrl + N`).
+### 1. صندوق الوارد الموحد (Unified Multi-Network Inbox)
+- عرض موحد لجميع الرسائل الواردة من مختلف المنصات في قائمة واحدة مريحة.
+- فلاتر ذكية لتصفية المحادثات حسب الشبكة (Telegram, WhatsApp, Discord, Slack...) أو حسب النوع (غير مقروءة، الأرشيف، التنبيهات، الطلبات).
+- شريط البحث والأوامر الشامل السريع (`Ctrl + K`) للبحث في كافة المحادثات والرسائل بنقرة زر.
+- نافذة بدء محادثة جديدة أو مجموعة عبر أي شبكة متصلة (`Ctrl + N`).
 
-### 2. دعم كامل للغتين (Arabic & English Bilingual Support)
-- تبديل فوري بنقرة واحدة بين العربية 🇸🇦 والإنجليزية 🇺🇸 من شاشة الإعدادات.
-- ضبط اتجاه الصفحة تلقائياً (`dir="rtl"` أو `dir="ltr"`).
-- حفظ خيار اللغة محلياً واستعادته تلقائياً عند التشغيل.
+### 2. تطابق بصري كامل 1:1 مع Beeper (1:1 Visual Parity)
+- **Left Rail (68px):** شريط تنقل جانبي رفيع يحتوي على أيقونات الحسابات والمنصات، مؤشرات الرسائل غير المقروءة، زر إضافة حساب جديد، وزر الإعدادات.
+- **Thread List (252px):** قائمة المحادثات المتطابقة مع فلاتر Beeper المنسدلة (Inbox, Archive, Reminders, Requests, Low Priority).
+- **Conversation Pane:** تصميم بطاقة المحادثة المظلمة المنحنية، فقاعات الرسائل الدقيقة، مؤشرات الحالة، وشريط كتابة الرسائل المتكامل مع شارة المنصة النشطة.
 
-### 3. تكامل Telegram MTProto الحقيقي (Real Telegram Integration)
-- اتصال مباشر عبر بروتوكول MTProto الرسمي (باستخدام GramJS).
-- تسجيل دخول حقيقي برقم الهاتف مع رمز التحقق OTP والتحقق بخطوتين (2FA).
-- مزامنة المحادثات والرسائل الفعلية وتحديثها فورياً عند وصول رسائل جديدة.
+### 3. دعم كامل للغتين (Arabic & English Bilingual Support)
+- واجهة ثنائية اللغة بالكامل تدعم التبديل اللحظي بنقرة واحدة من شاشة الإعدادات بين العربية 🇸🇦 والإنجليزية 🇺🇸.
+- ضبط ديناميكي كامل لاتجاه النصوص (`RTL` و `LTR`) وحفظ التفضيل محلياً واستعادته تلقائياً.
 
-### 4. أمان وتخزين محلي فائق (Local Security & Persistence)
-- قاعدة بيانات **SQLite** محلية لحفظ المحادثات وسجل الرسائل في `%APPDATA%\MohivxMessenger\storage\mohivx.sqlite`.
-- حماية الجلسات وتشفير المفاتيح باستخدام **Windows DPAPI** (`safeStorage`).
-- لا توجد خوادم وسيطة طرف ثالث تستلم رسائلك أو بياناتك الخاصة.
+### 4. أمان محلي 100% وتخزين دائم (Local Security & Privacy)
+- **قاعدة بيانات SQLite محلية:** حفظ المحادثات وجهات الاتصال وسجل الرسائل في `%APPDATA%\MohivxMessenger\storage\mohivx.sqlite`.
+- **تشفير الجلسات عبر Windows DPAPI:** حماية رموز الجلسات ومفاتيح الاعتماد بواسطة `safeStorage` المدمج في نظام Windows 11.
+- عزل كامل للبيانات بدون أي خوادم وسيطة تتطلع على محادثاتك.
+
+### 5. نظام الموصلات المستقلة (Modular Connectors Architecture)
+- محرك موصلات نمطي يدعم التوسع المستمر لكافة المنصات.
+- تكامل حي ومباشر عبر بروتوكول MTProto لتيليجرام مع تدفق الدخول الكامل (OTP و 2FA) ومزامنة الرسائل الحية.
 
 ---
 
 ## 🚀 التنزيل والتثبيت | Download & Installation
 
-يمكنك تنزيل الإصدار الأخير من صفحة [GitHub Releases v1.1.0](https://github.com/Mohivx/Mohivx-Messenger/releases/tag/v1.1.0):
+يمكنك تنزيل أحدث إصدار تنفيذي لنظام Windows 11 من صفحة [GitHub Releases v1.1.0](https://github.com/Mohivx/Mohivx-Messenger/releases/tag/v1.1.0):
 
 | الملف / File | النوع / Type | الوصف / Description |
 | :--- | :--- | :--- |
-| **Mohivx-Messenger-Setup-1.1.0.exe** | مثبت كامل (NSIS Installer) | مثبت احترافي مع اختصارات سطح المكتب وقائمة Start وخيار إلغاء التثبيت. |
-| **Mohivx-Messenger-Portable-1.1.0.exe** | نسخة محمولة (Portable) | ملف تنفيذي مستقل يعمل مباشرة بدون أي تثبيت أو صلاحيات إضافية. |
+| **Mohivx-Messenger-Setup-1.1.0.exe** | مثبت NSIS الكامل | مثبت رسمي متكامل مع اختصارات سطح المكتب وقائمة Start وخيار إلغاء التثبيت. |
+| **Mohivx-Messenger-Portable-1.1.0.exe** | النسخة المحمولة (Portable) | ملف تنفيذي مستقل يعمل مباشرة بنقرة واحدة دون الحاجة إلى تثبيت. |
 
 ---
 
@@ -79,34 +92,34 @@ cd Mohivx-Messenger
 # 2. تثبيت الحزم / Install dependencies
 npm install
 
-# 3. تشغيل وضع التطوير / Run in development mode
+# 3. تشغيل وضع التطوير / Run development mode
 npm run dev
 
 # 4. بناء المشروع / Build project
 npm run build
 
-# 5. تجميع ملفات التثبيت / Package Windows Installers
+# 5. تجميع ملفات التثبيت لـ Windows / Package Windows Installers
 npm run dist:win
 ```
 
 ---
 
-## 🏛️ الهيكل المعماري للمشروع | Project Architecture
+## 🏛️ المعمارية البرمجية | Architecture
 
 ```text
 Mohivx Messenger
-├── assets/                    # الشعار والأيقونات الرسمية بمختلف الأحجام
-├── electron/                  # محرك Electron لنظام Windows 11
-│   ├── main.ts                # إدارة النوافذ و الـ IPC والـ Tray
+├── assets/                    # الأيقونات والشعارات الرسمية بجميع المقاسات
+├── electron/                  # محرك النظام لنظام Windows 11
+│   ├── main.ts                # إدارة النوافذ، الأيقونات، AppUserModelId، و IPC
 │   ├── preload.ts             # جسر العزل الآمن للواجهة
-│   ├── connectors/            # موصلات المنصات (Telegram MTProto, WhatsApp, etc.)
-│   └── database/              # محرك التخزين الدائم SQLite
-├── src/                       # واجهة المستخدم المبنية بـ React + TypeScript + Tailwind
-│   ├── components/            # مكونات الواجهة (LeftRail, ThreadList, ConversationView...)
-│   ├── i18n/                  # نظام اللغات والترجمة (LanguageContext, translations)
+│   ├── connectors/            # نظام موصلات المنصات المستقلة
+│   └── database/              # محرك التخزين الدائم المحلي SQLite
+├── src/                       # واجهة المستخدم (React + TypeScript + Tailwind)
+│   ├── components/            # مكونات الواجهة المطابقة لـ Beeper
+│   ├── i18n/                  # نظام الترجمة المزدوجة (Arabic + English)
 │   ├── types/                 # تعريفات النماذج والأنواع المشتركة
-│   └── data/                  # الإعدادات والبيانات الأولية
-└── package.json               # إعدادات الحزم والتجميع لـ Windows
+│   └── data/                  # الإعدادات وقوائم المنصات
+└── package.json               # إعدادات التجميع والتثبيت لـ Windows
 ```
 
 ---
@@ -115,4 +128,4 @@ Mohivx Messenger
 
 - **المطور / Developer:** [Mohivx](https://github.com/Mohivx)
 - **الترخيص / License:** MIT License
-- جميع الأكواد البرمجية والمعمارية مكتوبة ومطورة بشكل مستقل بالكامل لصالح **Mohivx**.
+- جميع الأكواد البرمجية والمعمارية مطورة ومكتوبة بشكل مستقل بالكامل لصالح **Mohivx**.

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ViewFilter, NetworkId } from '../types';
 import { NetworkIcon } from './NetworkIcon';
 import { useLanguage } from '../i18n/LanguageContext';
+import mohivxIcon64 from '../assets/icon-64.png';
 
 interface LeftRailProps {
   currentFilter: ViewFilter;
@@ -130,8 +131,8 @@ export const LeftRail: React.FC<LeftRailProps> = ({
 
               {/* Inbox unread badge */}
               {item.id === 'inbox' && unreadCount > 0 && (
-                <div className="absolute -top-[2px] -right-[5px] bg-[#2561fb] text-white text-[10px] leading-[12px] font-semibold px-[4px] py-[1px] rounded-[8px] min-w-[18px] text-center shadow">
-                  {unreadCount}
+                <div className="absolute -top-[2px] -right-[5px] bg-[#2561fb] text-white text-[10px] leading-[12px] font-semibold px-[5px] py-[1px] rounded-[8px] min-w-[18px] text-center shadow">
+                  {unreadCount > 999 ? '999+' : unreadCount}
                 </div>
               )}
             </div>
@@ -252,9 +253,9 @@ export const LeftRail: React.FC<LeftRailProps> = ({
         >
           <button
             onClick={onOpenSettings}
-            className="w-[36px] h-[36px] rounded-full flex items-center justify-center p-[1px] ring-2 ring-white/10 hover:ring-white/30 transition-all overflow-hidden bg-gradient-to-tr from-[#9B51E0] to-[#2D9CDB]"
+            className="w-[36px] h-[36px] rounded-full flex items-center justify-center p-[2px] ring-2 ring-white/10 hover:ring-white/30 transition-all overflow-hidden bg-white/5"
           >
-            <img src="./assets/icon-64.png" alt="Mohivx" className="w-[32px] h-[32px] object-cover rounded-full" />
+            <img src={mohivxIcon64} alt="Mohivx" className="w-[32px] h-[32px] object-contain rounded-full" />
           </button>
         </div>
       </div>

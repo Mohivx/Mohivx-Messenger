@@ -13,17 +13,7 @@ export const INITIAL_NETWORKS: NetworkInfo[] = [
   { id: 'matrix', name: 'Matrix', color: '#0DBD8B', iconBg: '#0DBD8B', category: 'chat', connected: false, status: 'disconnected' },
 ];
 
-export const INITIAL_ACCOUNTS: Account[] = [
-  {
-    id: 'acc-mohivx-core',
-    networkId: 'matrix',
-    username: 'mohivx',
-    displayName: 'Mohivx',
-    avatarUrl: './assets/icon-128.png',
-    connectedAt: '2026-10-31',
-    status: 'active',
-  },
-];
+export const INITIAL_ACCOUNTS: Account[] = [];
 
 export const INITIAL_THREADS: Thread[] = [
   {

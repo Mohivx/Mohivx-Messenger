@@ -151,20 +151,6 @@ export const ThreadList: React.FC<ThreadListProps> = ({
         </div>
       </div>
 
-      {/* Stories / Pinned Header Avatar Card */}
-      <div className="py-[12px] flex items-center justify-center border-b border-white/5">
-        <div className="flex flex-col items-center cursor-pointer group">
-          <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-gradient-to-tr from-[#9B51E0] via-[#BB6BD9] to-[#2D9CDB] shadow-md group-hover:scale-105 transition-transform">
-            <div className="w-full h-full rounded-full bg-[#1c1c1e] flex items-center justify-center text-white overflow-hidden">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-[28px] h-[28px] text-[#A791FF]">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-            </div>
-          </div>
-          <span className="text-[12px] font-semibold text-[#ededed] mt-[6px]">{t('premium')}</span>
-        </div>
-      </div>
-
       {/* Virtualized / Scrollable Thread List */}
       <div className="flex-1 overflow-y-auto px-[6px] py-[4px] space-y-[2px]">
         {displayedThreads.length === 0 ? (
