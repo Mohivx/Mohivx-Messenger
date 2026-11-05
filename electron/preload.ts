@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('mohivxApi', {
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
   sendNotification: (title: string, body: string) => ipcRenderer.send('notify', { title, body }),
+  detectBrowsers: () => ipcRenderer.invoke('detect-browsers'),
 
   // Telegram MTProto methods
   telegram: {

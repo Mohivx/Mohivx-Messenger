@@ -17,7 +17,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   onSendMessage,
   onAddReaction,
 }) => {
-  const { t } = useLanguage();
+  const { t, isRtl, language, setLanguage, dir, setDirectionMode } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,23 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     <div className="flex-1 h-[calc(100vh-16px)] bg-[#000000] rounded-[10px] m-[8px] flex flex-col overflow-hidden relative select-none">
       {/* Top Header Bar */}
       <div className="h-[52px] px-[16px] flex items-center justify-between border-b border-white/5 z-20 titlebar-drag-region">
-        <div className="w-[80px]" /> {/* Spacer */}
+        {/* Quick Language & Direction Switcher Pill */}
+        <div className="titlebar-no-drag flex items-center gap-[6px]">
+          <button
+            onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
+            className="text-[11px] font-medium text-white/80 bg-white/5 hover:bg-white/10 px-[8px] py-[4px] rounded-[6px] border border-white/10 transition-colors"
+            title={t('languageLabel')}
+          >
+            {language === 'ar' ? 'EN' : 'عربي'}
+          </button>
+          <button
+            onClick={() => setDirectionMode(isRtl ? 'ltr' : 'rtl')}
+            className="text-[11px] font-mono font-semibold text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-[8px] py-[4px] rounded-[6px] border border-[#0a84ff]/20 transition-colors"
+            title={t('layoutDirection')}
+          >
+            {dir.toUpperCase()} {isRtl ? '←' : '→'}
+          </button>
+        </div>
 
         {/* Center Recipient Pill */}
         <div className="titlebar-no-drag flex items-center gap-[8px] cursor-pointer group">
@@ -76,7 +92,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
               alt={thread.title}
               className="w-[32px] h-[32px] rounded-full object-cover bg-white/10"
             />
-            <div className="absolute -bottom-[2px] -right-[2px]">
+            <div className={`absolute -bottom-[2px] ${isRtl ? '-left-[2px]' : '-right-[2px]'}`}>
               <NetworkIcon network={thread.networkId} size={14} badge />
             </div>
           </div>
@@ -88,8 +104,8 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           </div>
         </div>
 
-        {/* Right Feedback Pill */}
-        <div className="titlebar-no-drag">
+        {/* Right Feedback Pill & Window Controls */}
+        <div className="titlebar-no-drag flex items-center gap-[8px]">
           <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
             {t('feedback')}
           </button>
@@ -130,8 +146,12 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
               <div className={`flex flex-col max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
                 {/* Reply snippet if any */}
                 {msg.replyTo && (
-                  <div className="mb-[4px] px-[10px] py-[4px] rounded-[10px] bg-black/40 border-l-2 border-[#2561fb] text-[11px] text-white/60 max-w-full truncate">
-                    <span className="font-semibold text-white/80 ml-1">{msg.replyTo.senderName}:</span>
+                  <div
+                    className={`mb-[4px] px-[10px] py-[4px] rounded-[10px] bg-black/40 ${
+                      isRtl ? 'border-r-2' : 'border-l-2'
+                    } border-[#2561fb] text-[11px] text-white/60 max-w-full truncate`}
+                  >
+                    <span className="font-semibold text-white/80 me-1">{msg.replyTo.senderName}:</span>
                     {msg.replyTo.snippet}
                   </div>
                 )}
@@ -155,11 +175,11 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                   )}
 
                   {/* Content text */}
-                  <div dir="auto" className="text-right leading-relaxed">{msg.content}</div>
+                  <div dir="auto" className="leading-relaxed">{msg.content}</div>
 
                   {/* Timestamp */}
                   <div className="flex items-center justify-end gap-[4px] mt-[2px]">
-                    <span className="text-[11px] text-[#808080] font-normal leading-none">
+                    <span className="text-[11px] text-white/60 font-normal leading-none">
                       {msg.timestamp}
                     </span>
                     {isMe && (
@@ -195,7 +215,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
               {hoveredMessageId === msg.id && (
                 <div
                   className={`absolute top-0 flex items-center gap-[4px] bg-[#1c1c1d] border border-white/10 rounded-full px-[6px] py-[2px] shadow-lg z-30 transition-all ${
-                    isMe ? 'right-full mr-[8px]' : 'left-full ml-[8px]'
+                    isMe ? 'end-full me-[8px]' : 'start-full ms-[8px]'
                   }`}
                 >
                   {['👍', '❤️', '🔥', '😂'].map((emoji) => (
@@ -224,7 +244,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
       {/* Bottom Composer Bar (52px) */}
       <div className="h-[52px] px-[12px] pb-[8px] pt-[4px] bg-[#000000] flex items-center gap-[8px] z-20">
-        {/* Left Attachment '+' Button */}
+        {/* Attachment '+' Button */}
         <button
           title={t('addAttachment')}
           className="w-[36px] h-[36px] rounded-full bg-[#1c1c1d] hover:bg-white/10 flex items-center justify-center text-[#9b9ba2] hover:text-white transition-colors shrink-0"
@@ -250,7 +270,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             className="flex-1 bg-transparent border-none outline-none text-[13px] text-white placeholder-white/40 font-normal"
           />
 
-          {/* Right Action Icons in Capsule */}
+          {/* Action Icons in Capsule */}
           <div className="flex items-center gap-[6px]">
             {/* Emoji Button */}
             <button className="text-[#9b9ba2] hover:text-white transition-colors">
@@ -274,7 +294,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           </div>
         </div>
 
-        {/* Right Send Button */}
+        {/* Send Button */}
         <button
           onClick={handleSend}
           disabled={!inputText.trim()}

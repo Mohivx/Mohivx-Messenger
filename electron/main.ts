@@ -139,6 +139,67 @@ ipcMain.on('notify', (_, { title, body }) => {
   }
 });
 
+// Safe Installed Browser Detector (checks standard browser paths without touching private vaults)
+ipcMain.handle('detect-browsers', async () => {
+  const localAppData = process.env.LOCALAPPDATA || '';
+  const appData = process.env.APPDATA || '';
+  const programFiles = process.env['PROGRAMFILES'] || 'C:\\Program Files';
+  const programFilesX86 = process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)';
+
+  const candidates = [
+    {
+      id: 'brave',
+      name: 'Brave Browser',
+      profileName: 'Default Profile',
+      paths: [
+        path.join(localAppData, 'BraveSoftware', 'Brave-Browser', 'User Data'),
+        path.join(programFiles, 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe'),
+        path.join(programFilesX86, 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe'),
+      ],
+    },
+    {
+      id: 'chrome',
+      name: 'Google Chrome',
+      profileName: 'Default Profile',
+      paths: [
+        path.join(localAppData, 'Google', 'Chrome', 'User Data'),
+        path.join(programFiles, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      ],
+    },
+    {
+      id: 'edge',
+      name: 'Microsoft Edge',
+      profileName: 'Personal Profile',
+      paths: [
+        path.join(localAppData, 'Microsoft', 'Edge', 'User Data'),
+        path.join(programFilesX86, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+      ],
+    },
+    {
+      id: 'firefox',
+      name: 'Mozilla Firefox',
+      profileName: 'Default-Release',
+      paths: [
+        path.join(appData, 'Mozilla', 'Firefox', 'Profiles'),
+        path.join(programFiles, 'Mozilla Firefox', 'firefox.exe'),
+      ],
+    },
+  ];
+
+  return candidates.map((b) => ({
+    id: b.id,
+    name: b.name,
+    profileName: b.profileName,
+    installed: b.paths.some((p) => {
+      try {
+        return fs.existsSync(p);
+      } catch {
+        return false;
+      }
+    }),
+  }));
+});
+
 // Telegram IPC Handlers
 ipcMain.handle('tg-send-code', async (_, { phoneNumber, apiId, apiHash }) => {
   return await connectorManager.telegram.sendCode(phoneNumber, apiId, apiHash);

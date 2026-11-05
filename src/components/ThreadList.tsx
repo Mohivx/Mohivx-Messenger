@@ -8,6 +8,7 @@ interface ThreadListProps {
   selectedThreadId: string | null;
   onSelectThread: (threadId: string) => void;
   currentFilter: ViewFilter;
+  onSelectFilter?: (filter: ViewFilter) => void;
   filterUnreadOnly: boolean;
   onToggleFilterUnread: () => void;
   onOpenSearch: () => void;
@@ -20,13 +21,14 @@ export const ThreadList: React.FC<ThreadListProps> = ({
   selectedThreadId,
   onSelectThread,
   currentFilter,
+  onSelectFilter,
   filterUnreadOnly,
   onToggleFilterUnread,
   onOpenSearch,
   onOpenNewChat,
   activeNetwork,
 }) => {
-  const { t } = useLanguage();
+  const { t, isRtl } = useLanguage();
   const [inboxDropdownOpen, setInboxDropdownOpen] = useState(false);
 
   const getFilterTitle = (filter: ViewFilter): string => {
@@ -41,15 +43,19 @@ export const ThreadList: React.FC<ThreadListProps> = ({
     }
   };
 
-  const displayedThreads = threads.filter((t) => {
-    if (activeNetwork && t.networkId !== activeNetwork) return false;
-    if (filterUnreadOnly && t.unreadCount === 0) return false;
-    if (currentFilter === 'archive') return t.isArchived;
-    return !t.isArchived;
+  const displayedThreads = threads.filter((tItem) => {
+    if (activeNetwork && tItem.networkId !== activeNetwork) return false;
+    if (filterUnreadOnly && tItem.unreadCount === 0) return false;
+    if (currentFilter === 'archive') return tItem.isArchived;
+    return !tItem.isArchived;
   });
 
   return (
-    <div className="w-[252px] h-screen bg-[#252830] flex flex-col shrink-0 border-r border-white/5 select-none relative z-10">
+    <div
+      className={`w-[252px] h-screen bg-[#252830] flex flex-col shrink-0 ${
+        isRtl ? 'border-l' : 'border-r'
+      } border-white/5 select-none relative z-10`}
+    >
       {/* Top Header Bar (52px) */}
       <div className="h-[52px] flex items-center justify-between px-[12px] pt-[8px] border-b border-white/5 titlebar-drag-region">
         {/* Inbox Dropdown Button */}
@@ -66,16 +72,29 @@ export const ThreadList: React.FC<ThreadListProps> = ({
 
           {/* Inbox Filter Dropdown Menu */}
           {inboxDropdownOpen && (
-            <div className="absolute top-[28px] left-0 w-[190px] bg-[#1c1c1e] border border-white/10 rounded-[12px] shadow-2xl py-[6px] z-50 text-[13px]">
-              <div className="px-[12px] py-[6px] text-white/50 text-[11px] font-medium tracking-wide">
+            <div
+              className={`absolute top-[28px] ${
+                isRtl ? 'right-0' : 'left-0'
+              } w-[195px] bg-[#1c1c1e] border border-white/10 rounded-[12px] shadow-2xl py-[6px] z-50 text-[13px]`}
+            >
+              <div className="px-[12px] py-[6px] text-white/50 text-[11px] font-medium tracking-wide text-start">
                 {t('spacesAndFilters')}
               </div>
               <button
-                onClick={() => setInboxDropdownOpen(false)}
-                className="w-full text-left px-[12px] py-[6px] flex items-center justify-between text-[#f6f6f6] hover:bg-white/10"
+                onClick={() => {
+                  onSelectFilter?.('inbox');
+                  setInboxDropdownOpen(false);
+                }}
+                className="w-full text-start px-[12px] py-[6px] flex items-center justify-between text-[#f6f6f6] hover:bg-white/10"
               >
                 <div className="flex items-center gap-[8px]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className={`w-[14px] h-[14px] ${currentFilter === 'inbox' ? 'opacity-100' : 'opacity-0'}`}
+                  >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   <span>{t('inbox')}</span>
@@ -83,24 +102,36 @@ export const ThreadList: React.FC<ThreadListProps> = ({
                 <span className="text-[11px] text-white/40">Ctrl 1</span>
               </button>
               <button
-                onClick={() => setInboxDropdownOpen(false)}
-                className="w-full text-left px-[12px] py-[6px] flex items-center gap-[8px] text-[#f6f6f6] hover:bg-white/10"
+                onClick={() => {
+                  onSelectFilter?.('archive');
+                  setInboxDropdownOpen(false);
+                }}
+                className="w-full text-start px-[12px] py-[6px] flex items-center justify-between text-[#f6f6f6] hover:bg-white/10"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px] opacity-0">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span>{t('archive')}</span>
+                <div className="flex items-center gap-[8px]">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className={`w-[14px] h-[14px] ${currentFilter === 'archive' ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>{t('archive')}</span>
+                </div>
+                <span className="text-[11px] text-white/40">Ctrl 2</span>
               </button>
               <div className="h-[1px] bg-white/10 my-[4px]" />
               <button
                 onClick={() => setInboxDropdownOpen(false)}
-                className="w-full text-left px-[12px] py-[6px] text-[#f6f6f6] hover:bg-white/10"
+                className="w-full text-start px-[12px] py-[6px] text-[#f6f6f6] hover:bg-white/10"
               >
                 {t('selectChats')}
               </button>
               <button
                 onClick={() => setInboxDropdownOpen(false)}
-                className="w-full text-left px-[12px] py-[6px] text-[#f6f6f6] hover:bg-white/10"
+                className="w-full text-start px-[12px] py-[6px] text-[#f6f6f6] hover:bg-white/10"
               >
                 {t('mergeChats')}
               </button>
@@ -108,7 +139,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
           )}
         </div>
 
-        {/* Right Header Action Icons */}
+        {/* Header Action Icons */}
         <div className="flex items-center gap-[4px] titlebar-no-drag">
           {/* Filter Unread Toggle */}
           <button
@@ -151,7 +182,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
         </div>
       </div>
 
-      {/* Virtualized / Scrollable Thread List */}
+      {/* Scrollable Thread List */}
       <div className="flex-1 overflow-y-auto px-[6px] py-[4px] space-y-[2px]">
         {displayedThreads.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[200px] text-center px-[16px]">
@@ -178,13 +209,13 @@ export const ThreadList: React.FC<ThreadListProps> = ({
                     className="w-[46px] h-[46px] rounded-full object-cover bg-white/10"
                   />
                   {/* Network Icon Badge */}
-                  <div className="absolute -bottom-[2px] -right-[2px]">
+                  <div className={`absolute -bottom-[2px] ${isRtl ? '-left-[2px]' : '-right-[2px]'}`}>
                     <NetworkIcon network={thread.networkId} size={16} badge />
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0 pr-[4px]">
+                <div className="flex-1 min-w-0 pe-[4px] text-start">
                   {/* Title & Time */}
                   <div className="flex items-center justify-between mb-[2px]">
                     <span className="text-[14px] font-semibold text-white/90 truncate leading-tight">
@@ -199,7 +230,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
                   <div className="flex items-center justify-between gap-[4px]">
                     <p className="text-[13px] text-white/70 truncate leading-normal">
                       {thread.lastMessageSender && (
-                        <span className="font-medium text-white/80 ml-1">
+                        <span className="font-medium text-white/80 me-1">
                           {thread.lastMessageSender}:
                         </span>
                       )}

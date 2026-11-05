@@ -10,14 +10,25 @@ import { SettingsModal } from './components/SettingsModal';
 import { AddAccountModal } from './components/AddAccountModal';
 import { TelegramAuthModal } from './components/TelegramAuthModal';
 import { UpdateNotification } from './components/UpdateNotification';
+import { useLanguage } from './i18n/LanguageContext';
 
 export const App: React.FC = () => {
+  const { dir } = useLanguage();
   const [currentFilter, setCurrentFilter] = useState<ViewFilter>('inbox');
   const [filterUnreadOnly, setFilterUnreadOnly] = useState(false);
   const [activeNetwork, setActiveNetwork] = useState<NetworkId | null>(null);
 
   const [networks, setNetworks] = useState<NetworkInfo[]>(INITIAL_NETWORKS);
-  const [accounts, setAccounts] = useState<Account[]>(INITIAL_ACCOUNTS);
+  const [accounts, setAccounts] = useState<Account[]>(() => {
+    try {
+      const saved = localStorage.getItem('mohivx_accounts');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return INITIAL_ACCOUNTS;
+  });
   const [threads, setThreads] = useState<Thread[]>(INITIAL_THREADS);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>('thread-1');
   const [messagesMap, setMessagesMap] = useState<Record<string, Message[]>>(INITIAL_MESSAGES);
@@ -29,6 +40,12 @@ export const App: React.FC = () => {
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
   const [isTelegramConnected, setIsTelegramConnected] = useState(false);
   const [activeUpdate, setActiveUpdate] = useState<UpdateInfo | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('mohivx_accounts', JSON.stringify(accounts));
+    } catch {}
+  }, [accounts]);
 
   // Sync Telegram threads and check connection status
   const checkTelegramStatus = useCallback(async () => {
@@ -88,14 +105,12 @@ export const App: React.FC = () => {
     const api = (window as any).mohivxApi;
     if (!api?.updater) return;
 
-    // Listen for background update detection
     const removeListener = api.updater.onUpdateAvailable((info: UpdateInfo) => {
       if (info && info.updateAvailable) {
         setActiveUpdate(info);
       }
     });
 
-    // Check directly on client start as well
     api.updater.checkForUpdates().then((info: UpdateInfo) => {
       if (info && info.updateAvailable) {
         setActiveUpdate(info);
@@ -123,7 +138,6 @@ export const App: React.FC = () => {
 
       setMessagesMap((prev) => {
         const existing = prev[msg.threadId] || [];
-        // Avoid duplicate message IDs
         if (existing.some((m) => m.id === msg.id)) return prev;
         return {
           ...prev,
@@ -146,7 +160,6 @@ export const App: React.FC = () => {
               : t
           );
         } else {
-          // New thread arrived
           const newThread: Thread = {
             id: msg.threadId,
             networkId: msg.networkId || 'telegram',
@@ -189,7 +202,6 @@ export const App: React.FC = () => {
   const handleSelectThread = async (threadId: string) => {
     setSelectedThreadId(threadId);
 
-    // If it's a telegram thread and connected, fetch real history if empty
     const t = threads.find((th) => th.id === threadId);
     if (t?.networkId === 'telegram' && isTelegramConnected) {
       const existing = messagesMap[threadId];
@@ -212,7 +224,6 @@ export const App: React.FC = () => {
 
     const currentThread = threads.find((t) => t.id === selectedThreadId);
 
-    // If connected to Telegram and this is a Telegram thread, send through MTProto
     if (currentThread?.networkId === 'telegram' && isTelegramConnected) {
       try {
         const api = (window as any).mohivxApi;
@@ -244,7 +255,6 @@ export const App: React.FC = () => {
       }
     }
 
-    // Fallback local message
     const newMessage: Message = {
       id: `msg-${Date.now()}`,
       threadId: selectedThreadId,
@@ -329,12 +339,51 @@ export const App: React.FC = () => {
     }));
   };
 
-  const handleConnectNetwork = (network: NetworkId) => {
-    if (network === 'telegram') {
+  const handleConnectNetwork = (network: NetworkId, sourceBrowser?: string) => {
+    if (network === 'telegram' && !sourceBrowser) {
       setTelegramAuthOpen(true);
       return;
     }
-    console.log('Connected network:', network);
+
+    const networkLabels: Record<NetworkId, string> = {
+      whatsapp: 'WhatsApp',
+      x: 'X (Twitter)',
+      telegram: 'Telegram',
+      slack: 'Slack',
+      discord: 'Discord',
+      facebook: 'Facebook Messenger',
+      instagram: 'Instagram',
+      linkedin: 'LinkedIn',
+      googlemessages: 'Google Messages',
+      signal: 'Signal',
+      googlechat: 'Google Chat',
+      line: 'LINE',
+      matrix: 'Matrix',
+      viber: 'Viber',
+      wechat: 'WeChat',
+    };
+
+    const label = networkLabels[network] || network;
+
+    setNetworks((prev) =>
+      prev.map((n) => (n.id === network ? { ...n, connected: true, status: 'online' } : n))
+    );
+
+    setAccounts((prev) => {
+      if (prev.some((a) => a.networkId === network)) return prev;
+      return [
+        ...prev,
+        {
+          id: `acc-${network}-${Date.now()}`,
+          networkId: network,
+          username: sourceBrowser ? `@mohivx • ${sourceBrowser}` : '@mohivx • Connected Bridge',
+          displayName: `${label} Account`,
+          avatarUrl: './assets/icon-128.png',
+          connectedAt: new Date().toISOString().split('T')[0],
+          status: 'active',
+        },
+      ];
+    });
   };
 
   const handleTelegramAuthSuccess = async () => {
@@ -342,28 +391,33 @@ export const App: React.FC = () => {
   };
 
   const handleDisconnectAccount = async (account: Account) => {
-    if (account.networkId === 'telegram') {
+    if (account.networkId === 'telegram' && isTelegramConnected) {
       try {
         const api = (window as any).mohivxApi;
         await api?.telegram?.disconnect();
         setIsTelegramConnected(false);
-        setNetworks((prev) =>
-          prev.map((n) => (n.id === 'telegram' ? { ...n, connected: false, status: 'disconnected', unreadCount: 0 } : n))
-        );
-        setAccounts((prev) => prev.filter((a) => a.id !== account.id));
-        setThreads((prev) => prev.filter((t) => t.networkId !== 'telegram'));
       } catch (err) {
         console.error('Error disconnecting Telegram account:', err);
       }
+    }
+    setNetworks((prev) =>
+      prev.map((n) =>
+        n.id === account.networkId ? { ...n, connected: false, status: 'disconnected', unreadCount: 0 } : n
+      )
+    );
+    setAccounts((prev) => prev.filter((a) => a.id !== account.id));
+    if (activeNetwork === account.networkId) {
+      setActiveNetwork(null);
     }
   };
 
   const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
   const currentMessages = selectedThreadId ? messagesMap[selectedThreadId] || [] : [];
   const totalUnread = threads.reduce((acc, t) => acc + t.unreadCount, 0);
+  const connectedNetworkIds = accounts.map((a) => a.networkId);
 
   return (
-    <div className="flex w-screen h-screen bg-[#232323] overflow-hidden select-none font-sans">
+    <div dir={dir} className="flex w-screen h-screen bg-[#232323] overflow-hidden select-none font-sans">
       {/* 1. Left Rail (68px) */}
       <LeftRail
         currentFilter={currentFilter}
@@ -372,10 +426,10 @@ export const App: React.FC = () => {
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenAddAccount={() => setAddAccountOpen(true)}
         activeNetwork={activeNetwork}
+        connectedNetworks={connectedNetworkIds}
         onSelectNetwork={(net) => {
           setActiveNetwork(net);
-          // If clicking Telegram and not yet connected, offer to connect
-          if (net === 'telegram' && !isTelegramConnected) {
+          if (net === 'telegram' && !isTelegramConnected && !connectedNetworkIds.includes('telegram')) {
             setTelegramAuthOpen(true);
           }
         }}
@@ -387,6 +441,7 @@ export const App: React.FC = () => {
         selectedThreadId={selectedThreadId}
         onSelectThread={handleSelectThread}
         currentFilter={currentFilter}
+        onSelectFilter={setCurrentFilter}
         filterUnreadOnly={filterUnreadOnly}
         onToggleFilterUnread={() => setFilterUnreadOnly(!filterUnreadOnly)}
         onOpenSearch={() => setSearchOpen(true)}
@@ -431,6 +486,7 @@ export const App: React.FC = () => {
         isOpen={addAccountOpen}
         onClose={() => setAddAccountOpen(false)}
         onConnectNetwork={handleConnectNetwork}
+        connectedNetworks={connectedNetworkIds}
       />
 
       {/* Real Telegram MTProto Auth Modal */}

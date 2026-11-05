@@ -1,18 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Language, translations } from './translations';
+import { Language, DirectionMode, translations } from './translations';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: keyof typeof translations.en, params?: Record<string, string | number>) => string;
+  directionMode: DirectionMode;
+  setDirectionMode: (mode: DirectionMode) => void;
+  dir: 'rtl' | 'ltr';
   isRtl: boolean;
+  t: (key: keyof typeof translations.en, params?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
   language: 'en',
   setLanguage: () => {},
-  t: (key) => key,
+  directionMode: 'auto',
+  setDirectionMode: () => {},
+  dir: 'ltr',
   isRtl: false,
+  t: (key) => key,
 });
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -21,15 +27,29 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return saved === 'ar' || saved === 'en' ? saved : 'en';
   });
 
+  const [directionMode, setDirectionModeState] = useState<DirectionMode>(() => {
+    const saved = localStorage.getItem('mohivx_dir_mode') as DirectionMode;
+    return saved === 'auto' || saved === 'rtl' || saved === 'ltr' ? saved : 'auto';
+  });
+
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('mohivx_lang', lang);
   };
 
+  const setDirectionMode = (mode: DirectionMode) => {
+    setDirectionModeState(mode);
+    localStorage.setItem('mohivx_dir_mode', mode);
+  };
+
+  const dir: 'rtl' | 'ltr' =
+    directionMode === 'auto' ? (language === 'ar' ? 'rtl' : 'ltr') : directionMode;
+  const isRtl = dir === 'rtl';
+
   useEffect(() => {
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = dir;
     document.documentElement.lang = language;
-  }, [language]);
+  }, [dir, language]);
 
   const t = (key: keyof typeof translations.en, params?: Record<string, string | number>): string => {
     const dict = translations[language] || translations.en;
@@ -42,10 +62,18 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return text;
   };
 
-  const isRtl = language === 'ar';
-
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRtl }}>
+    <LanguageContext.Provider
+      value={{
+        language,
+        setLanguage,
+        directionMode,
+        setDirectionMode,
+        dir,
+        isRtl,
+        t,
+      }}
+    >
       {children}
     </LanguageContext.Provider>
   );
