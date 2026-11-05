@@ -89,6 +89,12 @@ export const App: React.FC = () => {
     const cleanup = api.onIncomingMessage((msg: any) => {
       if (!msg?.threadId) return;
 
+      try {
+        const audio = new Audio('./sounds/receive.wav');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      } catch {}
+
       setMessagesMap((prev) => {
         const existing = prev[msg.threadId] || [];
         // Avoid duplicate message IDs

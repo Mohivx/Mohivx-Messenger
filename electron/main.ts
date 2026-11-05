@@ -20,6 +20,10 @@ function getAppIcon(): Electron.NativeImage | undefined {
   const possiblePaths = [
     path.join(__dirname, '../assets/icon.ico'),
     path.join(__dirname, '../assets/icon.png'),
+    path.join(__dirname, '../public/assets/icon.ico'),
+    path.join(__dirname, '../public/assets/icon.png'),
+    path.join(process.cwd(), 'assets/icon.ico'),
+    path.join(process.cwd(), 'assets/icon.png'),
     path.join(process.resourcesPath, 'assets/icon.ico'),
     path.join(process.resourcesPath, 'assets/icon.png'),
     path.join(process.resourcesPath, 'app.asar/assets/icon.ico'),
@@ -56,7 +60,7 @@ function createMainWindow() {
     x: isOffscreen ? -30000 : undefined,
     y: isOffscreen ? -30000 : undefined,
     titleBarStyle: 'hidden',
-    backgroundColor: '#232323',
+    backgroundColor: '#252830',
     icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

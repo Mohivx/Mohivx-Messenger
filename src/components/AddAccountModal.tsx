@@ -59,7 +59,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 select-none animate-in fade-in duration-150">
       <div
-        className="w-[420px] max-h-[85vh] bg-[#141415] border border-white/10 rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col"
+        className="w-[400px] h-[505px] max-h-[90vh] bg-[#1c1c1e] border border-white/10 rounded-[16px] shadow-[0_20px_60px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

@@ -4,14 +4,22 @@
 
 :root {
   color-scheme: dark;
+  --color-bg: #252830;
+  --appearance-color-bg-primary: #1c1c1e;
+  --color-primary: #0a84ff;
+  --color-primary-hover: #0071e3;
+  --account-switcher-width: 68px;
+  --inbox-filter-size: 36px;
+  --bubble-radius: 17px;
+  --bubble-radius-sm: 4px;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #232323;
+  background-color: #252830;
   color: #ededed;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', Roboto, sans-serif;
   user-select: none;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;

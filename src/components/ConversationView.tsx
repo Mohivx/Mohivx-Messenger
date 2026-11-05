@@ -32,6 +32,11 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
   const handleSend = () => {
     if (!inputText.trim() || !thread) return;
+    try {
+      const audio = new Audio('./sounds/send.wav');
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    } catch {}
     onSendMessage(inputText.trim());
     setInputText('');
   };
@@ -75,7 +80,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
               <NetworkIcon network={thread.networkId} size={14} badge />
             </div>
           </div>
-          <div className="bg-[#232323] hover:bg-[#2a2a2a] px-[12px] py-[5px] rounded-[14px] flex items-center gap-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.1)] transition-colors">
+          <div className="bg-[#252830] hover:bg-[#2c303a] px-[12px] py-[5px] rounded-[14px] flex items-center gap-[6px] shadow-[0_4px_10px_rgba(0,0,0,0.1)] transition-colors">
             <span className="text-[13px] font-semibold text-white">{thread.title}</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-[12px] h-[12px] text-white/40">
               <path d="M6 9l6 6 6-6" />
@@ -135,8 +140,8 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                 <div
                   className={`relative px-[12px] py-[8px] rounded-[17px] text-[13px] leading-relaxed break-words shadow-sm ${
                     isMe
-                      ? 'bg-[#2561fb] text-white rounded-br-[4px]'
-                      : 'bg-[#232326] text-[#ededed] rounded-bl-[4px]'
+                      ? 'bg-[#0a84ff] text-white rounded-br-[4px]'
+                      : 'bg-[#252830] text-[#ededed] border border-white/5 rounded-bl-[4px]'
                   }`}
                 >
                   {/* Sender Name if in group and incoming */}

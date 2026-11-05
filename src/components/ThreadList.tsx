@@ -49,7 +49,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
   });
 
   return (
-    <div className="w-[252px] h-screen bg-[#232323] flex flex-col shrink-0 border-r border-white/5 select-none relative z-10">
+    <div className="w-[252px] h-screen bg-[#252830] flex flex-col shrink-0 border-r border-white/5 select-none relative z-10">
       {/* Top Header Bar (52px) */}
       <div className="h-[52px] flex items-center justify-between px-[12px] pt-[8px] border-b border-white/5 titlebar-drag-region">
         {/* Inbox Dropdown Button */}
