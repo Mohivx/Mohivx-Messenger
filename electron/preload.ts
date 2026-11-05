@@ -31,4 +31,28 @@ contextBridge.exposeInMainWorld('mohivxApi', {
     ipcRenderer.on('incoming-message', handler);
     return () => ipcRenderer.removeListener('incoming-message', handler);
   },
+
+  // In-app Updates API
+  updater: {
+    getVersion: () => ipcRenderer.invoke('app-get-version'),
+    checkForUpdates: () => ipcRenderer.invoke('app-check-update'),
+    startUpdate: (downloadUrl: string) => ipcRenderer.invoke('app-start-update', { downloadUrl }),
+    installAndRestart: () => ipcRenderer.invoke('app-install-restart'),
+    openReleasePage: (url?: string) => ipcRenderer.invoke('app-open-release-page', { url }),
+    onUpdateAvailable: (callback: (info: any) => void) => {
+      const handler = (_: any, info: any) => callback(info);
+      ipcRenderer.on('update-available', handler);
+      return () => ipcRenderer.removeListener('update-available', handler);
+    },
+    onUpdateProgress: (callback: (prog: { percent: number; received: number; total: number }) => void) => {
+      const handler = (_: any, prog: any) => callback(prog);
+      ipcRenderer.on('update-progress', handler);
+      return () => ipcRenderer.removeListener('update-progress', handler);
+    },
+    onUpdateDownloaded: (callback: (data: { path: string }) => void) => {
+      const handler = (_: any, data: any) => callback(data);
+      ipcRenderer.on('update-downloaded', handler);
+      return () => ipcRenderer.removeListener('update-downloaded', handler);
+    },
+  },
 });

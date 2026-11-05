@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { LocalDatabase } from './database';
 import { ConnectorManager } from './connectors/manager';
+import { AppUpdater } from './updater';
 
 // Ensure proper Windows 11 taskbar grouping and icon display
 if (process.platform === 'win32') {
@@ -13,6 +14,7 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 const db = new LocalDatabase();
 const connectorManager = new ConnectorManager(db);
+const updater = new AppUpdater();
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -171,6 +173,37 @@ ipcMain.handle('tg-disconnect', async () => {
   return { success: true };
 });
 
+// In-app Update IPC Handlers
+ipcMain.handle('app-get-version', () => {
+  return updater.getCurrentVersion();
+});
+
+ipcMain.handle('app-check-update', async () => {
+  return await updater.checkForUpdates();
+});
+
+ipcMain.handle('app-start-update', async (_, { downloadUrl }) => {
+  if (!downloadUrl) throw new Error('Missing download URL');
+  try {
+    const downloadedPath = await updater.downloadUpdate(downloadUrl, (percent, received, total) => {
+      mainWindow?.webContents.send('update-progress', { percent, received, total });
+    });
+    mainWindow?.webContents.send('update-downloaded', { path: downloadedPath });
+    return { success: true, path: downloadedPath };
+  } catch (err: any) {
+    console.error('[Updater] Download error:', err);
+    throw err;
+  }
+});
+
+ipcMain.handle('app-install-restart', () => {
+  updater.installAndRestart();
+});
+
+ipcMain.handle('app-open-release-page', (_, { url }) => {
+  updater.openReleasePage(url);
+});
+
 app.whenReady().then(async () => {
   console.log('[App] Initializing database and connectors...');
   try {
@@ -182,6 +215,19 @@ app.whenReady().then(async () => {
 
   createMainWindow();
   createTray();
+
+  // Background In-App Update Check after launch
+  setTimeout(async () => {
+    try {
+      const updateInfo = await updater.checkForUpdates();
+      if (updateInfo.updateAvailable && mainWindow && !mainWindow.isDestroyed()) {
+        console.log(`[Updater] New version detected: ${updateInfo.latestVersion}`);
+        mainWindow.webContents.send('update-available', updateInfo);
+      }
+    } catch (err) {
+      console.warn('[Updater] Background check failed:', err);
+    }
+  }, 3500);
 
   // Forward incoming real-time messages to renderer
   connectorManager.onMessage((msg) => {

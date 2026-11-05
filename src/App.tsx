@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ViewFilter, NetworkId, Thread, Message, Account, NetworkInfo } from './types';
+import { ViewFilter, NetworkId, Thread, Message, Account, NetworkInfo, UpdateInfo } from './types';
 import { INITIAL_NETWORKS, INITIAL_ACCOUNTS, INITIAL_THREADS, INITIAL_MESSAGES } from './data/mockData';
 import { LeftRail } from './components/LeftRail';
 import { ThreadList } from './components/ThreadList';
@@ -9,6 +9,7 @@ import { NewChatModal } from './components/NewChatModal';
 import { SettingsModal } from './components/SettingsModal';
 import { AddAccountModal } from './components/AddAccountModal';
 import { TelegramAuthModal } from './components/TelegramAuthModal';
+import { UpdateNotification } from './components/UpdateNotification';
 
 export const App: React.FC = () => {
   const [currentFilter, setCurrentFilter] = useState<ViewFilter>('inbox');
@@ -27,6 +28,7 @@ export const App: React.FC = () => {
   const [addAccountOpen, setAddAccountOpen] = useState(false);
   const [telegramAuthOpen, setTelegramAuthOpen] = useState(false);
   const [isTelegramConnected, setIsTelegramConnected] = useState(false);
+  const [activeUpdate, setActiveUpdate] = useState<UpdateInfo | null>(null);
 
   // Sync Telegram threads and check connection status
   const checkTelegramStatus = useCallback(async () => {
@@ -80,6 +82,30 @@ export const App: React.FC = () => {
   useEffect(() => {
     checkTelegramStatus();
   }, [checkTelegramStatus]);
+
+  // In-App Update Listener & Startup Check
+  useEffect(() => {
+    const api = (window as any).mohivxApi;
+    if (!api?.updater) return;
+
+    // Listen for background update detection
+    const removeListener = api.updater.onUpdateAvailable((info: UpdateInfo) => {
+      if (info && info.updateAvailable) {
+        setActiveUpdate(info);
+      }
+    });
+
+    // Check directly on client start as well
+    api.updater.checkForUpdates().then((info: UpdateInfo) => {
+      if (info && info.updateAvailable) {
+        setActiveUpdate(info);
+      }
+    }).catch(() => {});
+
+    return () => {
+      if (typeof removeListener === 'function') removeListener();
+    };
+  }, []);
 
   // Real-time message listener from Electron IPC
   useEffect(() => {
@@ -413,6 +439,14 @@ export const App: React.FC = () => {
         onClose={() => setTelegramAuthOpen(false)}
         onSuccess={handleTelegramAuthSuccess}
       />
+
+      {/* In-App Update Prompt Banner */}
+      {activeUpdate && (
+        <UpdateNotification
+          updateInfo={activeUpdate}
+          onDismiss={() => setActiveUpdate(null)}
+        />
+      )}
     </div>
   );
 };

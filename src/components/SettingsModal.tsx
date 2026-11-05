@@ -27,6 +27,114 @@ type SettingsTab =
   | 'storage'
   | 'about';
 
+const AboutTabContent: React.FC = () => {
+  const { language, t } = useLanguage();
+  const [checking, setChecking] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<string | null>(null);
+  const [availableUpdate, setAvailableUpdate] = useState<any | null>(null);
+
+  const handleCheckUpdates = async () => {
+    setChecking(true);
+    setUpdateStatus(t('checkingForUpdates'));
+    try {
+      const api = (window as any).mohivxApi;
+      if (api?.updater?.checkForUpdates) {
+        const info = await api.updater.checkForUpdates();
+        if (info.updateAvailable) {
+          setAvailableUpdate(info);
+          setUpdateStatus(null);
+        } else {
+          setAvailableUpdate(null);
+          setUpdateStatus(t('upToDate'));
+        }
+      } else {
+        setUpdateStatus(t('upToDate'));
+      }
+    } catch {
+      setUpdateStatus(t('upToDate'));
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center text-center pt-[10px] space-y-[14px]">
+      <img src={mohivxLogo128} alt="Mohivx Logo" className="w-[80px] h-[80px] object-contain drop-shadow-xl" />
+      <div>
+        <h3 className="text-[20px] font-bold text-white tracking-wide">Mohivx Messenger</h3>
+        <p className="text-[12px] text-[#0a84ff] font-semibold mt-[2px]">Version 1.1.0 (Stable Release)</p>
+        <p className="text-[12px] text-white/60 mt-[6px] max-w-[440px] leading-relaxed">
+          {language === 'ar'
+            ? 'تطبيق المراسلة الموحد الشامل لنظام Windows 11 — يجمع كل محادثاتك ورسائلك من مختلف المنصات في مكان واحد مع تجربة متطابقة 1:1 مع Beeper.'
+            : 'The unified messaging desktop application for Windows 11 — 1:1 Beeper visual parity with independent architecture, local encryption, and bilingual Arabic/English support.'}
+        </p>
+      </div>
+
+      {/* Software Updates Box */}
+      <div className="p-[14px] bg-white/[0.04] border border-white/10 rounded-[12px] w-full max-w-[420px] text-left space-y-[10px]">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[13px] font-semibold text-white">{t('checkForUpdates')}</div>
+            <div className="text-[11px] text-white/50">{t('updateChannel')}</div>
+          </div>
+          <button
+            onClick={handleCheckUpdates}
+            disabled={checking}
+            className="px-[12px] py-[5px] bg-[#0a84ff] hover:bg-[#0071e3] text-white text-[12px] font-semibold rounded-[8px] transition-all disabled:opacity-50 flex items-center gap-[6px]"
+          >
+            {checking && <div className="w-[12px] h-[12px] border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            <span>{t('checkForUpdates')}</span>
+          </button>
+        </div>
+
+        {updateStatus && (
+          <div className="text-[12px] text-[#0a84ff] bg-[#0a84ff]/10 px-[10px] py-[6px] rounded-[8px] flex items-center gap-[6px]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[14px] h-[14px]">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+            <span>{updateStatus}</span>
+          </div>
+        )}
+
+        {availableUpdate && (
+          <div className="text-[12px] text-white bg-green-500/10 border border-green-500/20 px-[10px] py-[8px] rounded-[8px] flex items-center justify-between">
+            <span>{t('updateAvailableDesc', { version: availableUpdate.latestVersion })}</span>
+            <button
+              onClick={() => {
+                const api = (window as any).mohivxApi;
+                if (api?.updater?.startUpdate && availableUpdate.downloadUrl) {
+                  api.updater.startUpdate(availableUpdate.downloadUrl);
+                } else {
+                  api?.updater?.openReleasePage(availableUpdate.releaseUrl);
+                }
+              }}
+              className="px-[10px] py-[3px] bg-green-500 hover:bg-green-600 text-white rounded text-[11px] font-semibold ml-[8px]"
+            >
+              {t('updateNow')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="p-[14px] bg-white/5 border border-white/5 rounded-[12px] w-full max-w-[420px] text-left text-[12px] space-y-[6px]">
+        <div className="flex justify-between">
+          <span className="text-white/50">{t('developer')}:</span>
+          <span className="text-white font-medium">Mohivx</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-white/50">{t('repository')}:</span>
+          <span className="text-[#0a84ff] font-medium">github.com/Mohivx/Mohivx-Messenger</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-white/50">{t('environment')}:</span>
+          <span className="text-white font-medium">Windows 11 x64</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
@@ -336,33 +444,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {activeTab === 'about' && (
-            <div className="flex flex-col items-center justify-center text-center pt-[20px] space-y-[16px]">
-              <img src={mohivxLogo128} alt="Mohivx Logo" className="w-[84px] h-[84px] object-contain drop-shadow-xl" />
-              <div>
-                <h3 className="text-[20px] font-bold text-white tracking-wide">Mohivx Messenger</h3>
-                <p className="text-[12px] text-[#2561fb] font-semibold mt-[2px]">Version 1.1.0 (Bilingual AR / EN)</p>
-                <p className="text-[12px] text-white/60 mt-[8px] max-w-[440px] leading-relaxed">
-                  {language === 'ar'
-                    ? 'تطبيق المراسلة الموحد لنظام Windows 11 — تجربة مستوحاة بدقة بصرية متطابقة من Beeper، مع الحفاظ الكامل على استقلالية الكود والأمان المحلي المشفر ودعم ثنائي اللغة.'
-                    : 'The unified messaging desktop application for Windows 11 — 1:1 Beeper visual parity with independent architecture, local encryption, and bilingual Arabic/English support.'}
-                </p>
-              </div>
-
-              <div className="p-[14px] bg-white/5 border border-white/5 rounded-[12px] w-full max-w-[420px] text-left text-[12px] space-y-[6px]">
-                <div className="flex justify-between">
-                  <span className="text-white/50">{t('developer')}:</span>
-                  <span className="text-white font-medium">Mohivx</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">{t('repository')}:</span>
-                  <span className="text-[#2561fb] font-medium">github.com/Mohivx/Mohivx-Messenger</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">{t('environment')}:</span>
-                  <span className="text-white font-medium">Windows 11 x64</span>
-                </div>
-              </div>
-            </div>
+            <AboutTabContent />
           )}
         </div>
       </div>

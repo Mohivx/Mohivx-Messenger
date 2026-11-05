@@ -87,3 +87,16 @@ export interface Thread {
 }
 
 export type ViewFilter = 'inbox' | 'archive' | 'reminders' | 'sendlater' | 'requests' | 'lowpriority';
+
+export interface UpdateInfo {
+  updateAvailable: boolean;
+  currentVersion: string;
+  latestVersion: string;
+  releaseName: string;
+  releaseNotes: string;
+  releaseUrl: string;
+  downloadUrl?: string;
+  assetName?: string;
+  sizeBytes?: number;
+}
+

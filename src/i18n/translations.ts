@@ -117,6 +117,21 @@ export const translations = {
     developer: 'المطور',
     repository: 'المستودع',
     environment: 'البيئة',
+
+    // In-App Updates
+    updateAvailableTitle: 'يتوفر إصدار جديد!',
+    updateAvailableDesc: 'يتوفر تحديث جديد لتطبيق Mohivx Messenger ({version}).',
+    updateNow: 'تحديث الآن',
+    updateLater: 'لاحقاً',
+    updateDownloading: 'جاري تحميل التحديث... ({percent}%)',
+    updateDownloadedTitle: 'تم تحميل التحديث بنجاح!',
+    updateDownloadedDesc: 'اضغط على زر إعادة التشغيل لتثبيت الإصدار الجديد فوراً.',
+    restartAndInstall: 'إعادة التشغيل والتثبيت',
+    releaseNotes: 'تفاصيل التحديث',
+    checkForUpdates: 'التحقق من وجود تحديثات',
+    checkingForUpdates: 'جاري التحقق من التحديثات...',
+    upToDate: 'التطبيق محدث لآخر إصدار',
+    updateChannel: 'قناة التحديثات: المستقرة (Stable)',
   },
   en: {
     // Navigation & LeftRail
@@ -234,5 +249,20 @@ export const translations = {
     developer: 'Developer',
     repository: 'Repository',
     environment: 'Environment',
+
+    // In-App Updates
+    updateAvailableTitle: 'New Version Available!',
+    updateAvailableDesc: 'A new update for Mohivx Messenger is available ({version}).',
+    updateNow: 'Update Now',
+    updateLater: 'Later',
+    updateDownloading: 'Downloading update... ({percent}%)',
+    updateDownloadedTitle: 'Update Downloaded Successfully!',
+    updateDownloadedDesc: 'Click restart to install the new version immediately.',
+    restartAndInstall: 'Restart & Install',
+    releaseNotes: 'Release Notes',
+    checkForUpdates: 'Check for Updates',
+    checkingForUpdates: 'Checking for updates...',
+    upToDate: 'You are running the latest version',
+    updateChannel: 'Update Channel: Stable',
   },
 };
