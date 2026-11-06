@@ -37,6 +37,7 @@ export interface DbMessage {
 export class LocalDatabase {
   private db: Database | null = null;
   private dbPath: string;
+  private persistTimer: NodeJS.Timeout | null = null;
 
   constructor() {
     const userData = app?.getPath ? app.getPath('userData') : process.cwd();
@@ -55,7 +56,7 @@ export class LocalDatabase {
     }
 
     this.createTables();
-    this.persist();
+    this.persist(true);
   }
 
   private createTables(): void {
@@ -107,11 +108,33 @@ export class LocalDatabase {
     `);
   }
 
-  public persist(): void {
+  public persist(immediate = false): void {
     if (!this.db) return;
-    const data = this.db.export();
-    const buffer = Buffer.from(data);
-    fs.writeFileSync(this.dbPath, buffer);
+    if (immediate) {
+      if (this.persistTimer) {
+        clearTimeout(this.persistTimer);
+        this.persistTimer = null;
+      }
+      try {
+        const data = this.db.export();
+        fs.writeFileSync(this.dbPath, Buffer.from(data));
+      } catch (err) {
+        console.error('[Database] Failed to persist:', err);
+      }
+      return;
+    }
+
+    if (this.persistTimer) return;
+    this.persistTimer = setTimeout(() => {
+      this.persistTimer = null;
+      try {
+        if (!this.db) return;
+        const data = this.db.export();
+        fs.writeFileSync(this.dbPath, Buffer.from(data));
+      } catch (err) {
+        console.error('[Database] Failed to persist (debounced):', err);
+      }
+    }, 150);
   }
 
   public upsertThread(t: DbThread): void {

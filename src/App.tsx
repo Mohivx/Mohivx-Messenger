@@ -13,7 +13,7 @@ import { UpdateNotification } from './components/UpdateNotification';
 import { useLanguage } from './i18n/LanguageContext';
 
 export const App: React.FC = () => {
-  const { dir } = useLanguage();
+  const { dir, setDirectionMode, setLanguage } = useLanguage();
   const [currentFilter, setCurrentFilter] = useState<ViewFilter>('inbox');
   const [filterUnreadOnly, setFilterUnreadOnly] = useState(false);
   const [activeNetwork, setActiveNetwork] = useState<NetworkId | null>(null);
@@ -46,6 +46,33 @@ export const App: React.FC = () => {
       localStorage.setItem('mohivx_accounts', JSON.stringify(accounts));
     } catch {}
   }, [accounts]);
+
+  // Synchronize settings from Electron / Standalone Settings Window
+  useEffect(() => {
+    const api = (window as any).mohivxApi;
+    if (!api) return;
+
+    if (api.getAppSettings) {
+      api.getAppSettings().then((s: any) => {
+        if (s) {
+          if (s.directionMode) setDirectionMode(s.directionMode);
+          if (s.language) setLanguage(s.language);
+        }
+      }).catch(() => {});
+    }
+
+    if (api.onAppSettingsUpdated) {
+      const cleanup = api.onAppSettingsUpdated((s: any) => {
+        if (s) {
+          if (s.directionMode) setDirectionMode(s.directionMode);
+          if (s.language) setLanguage(s.language);
+        }
+      });
+      return () => {
+        if (typeof cleanup === 'function') cleanup();
+      };
+    }
+  }, [setDirectionMode, setLanguage]);
 
   // Sync Telegram threads and check connection status
   const checkTelegramStatus = useCallback(async () => {

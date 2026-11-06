@@ -160,8 +160,8 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                 <div
                   className={`relative px-[12px] py-[8px] rounded-[17px] text-[13px] leading-relaxed break-words shadow-sm ${
                     isMe
-                      ? 'bg-[#0a84ff] text-white rounded-br-[4px]'
-                      : 'bg-[#252830] text-[#ededed] border border-white/5 rounded-bl-[4px]'
+                      ? `bg-[#0a84ff] text-white ${isRtl ? 'rounded-bl-[4px]' : 'rounded-br-[4px]'}`
+                      : `bg-[#252830] text-[#ededed] border border-white/5 ${isRtl ? 'rounded-br-[4px]' : 'rounded-bl-[4px]'}`
                   }`}
                 >
                   {/* Sender Name if in group and incoming */}

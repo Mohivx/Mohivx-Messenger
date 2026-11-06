@@ -37,6 +37,7 @@ if (!fs.existsSync(iconPath)) {
 const targets = [
   path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'),
   path.resolve(__dirname, '../release/win-unpacked/Mohivx Messenger.exe'),
+  path.join(process.env.LOCALAPPDATA || '', 'Programs/Mohivx Messenger/Mohivx Messenger.exe'),
 ];
 
 for (const target of targets) {
