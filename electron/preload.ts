@@ -2,12 +2,48 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('mohivxApi', {
   platform: process.platform,
-  version: '1.0.0',
+  version: '1.1.0',
+
+  // Window Controls for any active window
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
   maximizeWindow: () => ipcRenderer.send('window-maximize'),
   closeWindow: () => ipcRenderer.send('window-close'),
+
+  // Desktop Notifications
   sendNotification: (title: string, body: string) => ipcRenderer.send('notify', { title, body }),
+
+  // Browser Profile Detector
   detectBrowsers: () => ipcRenderer.invoke('detect-browsers'),
+
+  // Standalone Settings Window
+  openSettingsWindow: (tab?: string) => ipcRenderer.invoke('open-settings-window', tab),
+  onSetSettingsTab: (callback: (tab: string) => void) => {
+    const handler = (_: any, tab: string) => callback(tab);
+    ipcRenderer.on('set-settings-tab', handler);
+    return () => ipcRenderer.removeListener('set-settings-tab', handler);
+  },
+
+  // App Settings persistence & system effects
+  getAppSettings: () => ipcRenderer.invoke('get-app-settings'),
+  saveAppSettings: (settings: any) => ipcRenderer.invoke('save-app-settings', settings),
+  onAppSettingsUpdated: (callback: (settings: any) => void) => {
+    const handler = (_: any, settings: any) => callback(settings);
+    ipcRenderer.on('app-settings-updated', handler);
+    return () => ipcRenderer.removeListener('app-settings-updated', handler);
+  },
+  clearAppCache: () => ipcRenderer.invoke('clear-app-cache'),
+  openAppDataFolder: () => ipcRenderer.invoke('open-app-folder'),
+
+  // Universal Network Web Login (WhatsApp, Instagram, Discord, Slack, etc.)
+  openNetworkLogin: (networkId: string) => ipcRenderer.invoke('open-network-login', networkId),
+  onNetworkAuthSuccess: (callback: (accountData: any) => void) => {
+    const handler = (_: any, data: any) => callback(data);
+    ipcRenderer.on('network-auth-success', handler);
+    return () => ipcRenderer.removeListener('network-auth-success', handler);
+  },
+
+  // Brave background / zero-token launcher
+  openBraveUrl: (url: string) => ipcRenderer.invoke('open-brave-url', url),
 
   // Telegram MTProto methods
   telegram: {

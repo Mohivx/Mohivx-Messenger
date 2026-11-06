@@ -181,6 +181,39 @@ export const App: React.FC = () => {
     };
   }, [selectedThreadId]);
 
+  // Network auth success listener from external login window
+  useEffect(() => {
+    const api = (window as any).mohivxApi;
+    if (!api?.onNetworkAuthSuccess) return;
+
+    const cleanup = api.onNetworkAuthSuccess((accData: any) => {
+      setNetworks((prev) =>
+        prev.map((n) => (n.id === accData.networkId ? { ...n, connected: true, status: 'online' } : n))
+      );
+      setAccounts((prev) => {
+        const filtered = prev.filter((a) => a.networkId !== accData.networkId);
+        const next = [...filtered, accData];
+        try {
+          localStorage.setItem('mohivx_accounts', JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+    });
+
+    return () => {
+      if (typeof cleanup === 'function') cleanup();
+    };
+  }, []);
+
+  const handleOpenSettings = (tab = 'profile') => {
+    const api = (window as any).mohivxApi;
+    if (api?.openSettingsWindow) {
+      api.openSettingsWindow(tab);
+    } else {
+      setSettingsOpen(true);
+    }
+  };
+
   // Global hotkeys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -192,7 +225,7 @@ export const App: React.FC = () => {
         setNewChatOpen(true);
       } else if (e.ctrlKey && e.key === ',') {
         e.preventDefault();
-        setSettingsOpen(true);
+        handleOpenSettings('profile');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -423,7 +456,7 @@ export const App: React.FC = () => {
         currentFilter={currentFilter}
         onSelectFilter={setCurrentFilter}
         unreadCount={totalUnread}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={() => handleOpenSettings('profile')}
         onOpenAddAccount={() => setAddAccountOpen(true)}
         activeNetwork={activeNetwork}
         connectedNetworks={connectedNetworkIds}

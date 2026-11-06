@@ -74,18 +74,26 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
     n.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleConnect = (net: NetworkId) => {
+  const handleConnect = async (net: NetworkId) => {
     if (net === 'telegram') {
       onConnectNetwork('telegram');
       onClose();
       return;
     }
     setConnectingNetwork(net);
-    setTimeout(() => {
+    try {
+      const api = (window as any).mohivxApi;
+      if (api?.openNetworkLogin) {
+        await api.openNetworkLogin(net);
+      }
       onConnectNetwork(net);
+    } catch (err) {
+      console.warn('[AddAccount] Error opening network login:', err);
+      onConnectNetwork(net);
+    } finally {
       setConnectingNetwork(null);
       onClose();
-    }, 650);
+    }
   };
 
   const handleStartBrowserScan = async () => {
@@ -232,6 +240,33 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                 >
                   <img src={braveLogo} alt="Brave" className="w-[14px] h-[14px]" />
                   <span>{t('scanActiveSessions')}</span>
+                </button>
+              </div>
+
+              {/* Instagram Saved & Programming Hub in Brave (Zero Token) */}
+              <div className="mt-[12px] p-[12px] bg-gradient-to-r from-[#fa7e1e]/10 via-[#d62976]/10 to-[#4f5bd5]/10 border border-[#d62976]/20 rounded-[14px] flex items-center justify-between">
+                <div className="flex items-center gap-[10px]">
+                  <div className="w-[32px] h-[32px] rounded-full bg-gradient-to-tr from-[#f9ed32] via-[#ee2a7b] to-[#002aff] flex items-center justify-center text-white p-[6px]">
+                    <NetworkIcon network="instagram" size={18} />
+                  </div>
+                  <div>
+                    <div className="text-[12px] font-semibold text-white">Instagram Saved (Brave)</div>
+                    <div className="text-[10px] text-white/50">@mohivx2 · 0 Tokens · Direct</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const api = (window as any).mohivxApi;
+                    const url = 'https://www.instagram.com/mohivx2/saved/';
+                    if (api?.openBraveUrl) {
+                      api.openBraveUrl(url);
+                    } else {
+                      window.open(url, '_blank');
+                    }
+                  }}
+                  className="px-[12px] py-[6px] bg-white/10 hover:bg-white/20 text-white text-[11px] font-semibold rounded-full border border-white/10 transition-colors"
+                >
+                  Open
                 </button>
               </div>
             </div>
