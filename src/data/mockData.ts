@@ -11,6 +11,11 @@ export const INITIAL_NETWORKS: NetworkInfo[] = [
   { id: 'x', name: 'X', color: '#202124', iconBg: '#202124', category: 'social', connected: false, status: 'disconnected' },
   { id: 'googlemessages', name: 'Google Messages', color: '#1A73E8', iconBg: '#F6F6F6', category: 'chat', connected: false, status: 'disconnected' },
   { id: 'matrix', name: 'Matrix', color: '#0DBD8B', iconBg: '#0DBD8B', category: 'chat', connected: false, status: 'disconnected' },
+  { id: 'linkedin', name: 'LinkedIn', color: '#086CE1', iconBg: '#086CE1', category: 'work', connected: false, status: 'disconnected' },
+  { id: 'googlechat', name: 'Google Chat', color: '#0EBC5F', iconBg: '#F6F6F6', category: 'work', connected: false, status: 'disconnected' },
+  { id: 'line', name: 'LINE', color: '#06C755', iconBg: '#06C755', category: 'chat', connected: false, status: 'disconnected' },
+  { id: 'viber', name: 'Viber', color: '#7360F2', iconBg: '#7360F2', category: 'chat', connected: false, status: 'disconnected' },
+  { id: 'wechat', name: 'WeChat', color: '#07C160', iconBg: '#07C160', category: 'chat', connected: false, status: 'disconnected' },
 ];
 
 export const INITIAL_ACCOUNTS: Account[] = [];

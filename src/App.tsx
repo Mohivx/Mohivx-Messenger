@@ -425,9 +425,24 @@ export const App: React.FC = () => {
 
     const label = networkLabels[network] || network;
 
-    setNetworks((prev) =>
-      prev.map((n) => (n.id === network ? { ...n, connected: true, status: 'online' } : n))
-    );
+    setNetworks((prev) => {
+      const found = prev.some((n) => n.id === network);
+      if (found) {
+        return prev.map((n) => (n.id === network ? { ...n, connected: true, status: 'online' } : n));
+      }
+      return [
+        ...prev,
+        {
+          id: network,
+          name: label,
+          color: '#2EA4DB',
+          iconBg: '#2EA4DB',
+          category: 'chat',
+          connected: true,
+          status: 'online',
+        },
+      ];
+    });
 
     setAccounts((prev) => {
       if (prev.some((a) => a.networkId === network)) return prev;

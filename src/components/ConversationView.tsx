@@ -48,16 +48,72 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
+  const renderWindowControls = () => (
+    <div className="flex items-center ms-1 border-s border-white/10 ps-1">
+      <button
+        onClick={() => (window as any).mohivxApi?.minimizeWindow?.()}
+        className="w-[34px] h-[28px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-[13px]"
+        title="Minimize"
+      >
+        ─
+      </button>
+      <button
+        onClick={() => (window as any).mohivxApi?.maximizeWindow?.()}
+        className="w-[34px] h-[28px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors text-[12px]"
+        title="Maximize"
+      >
+        ▢
+      </button>
+      <button
+        onClick={() => (window as any).mohivxApi?.closeWindow?.()}
+        className="w-[38px] h-[28px] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#e81123] transition-colors text-[14px]"
+        title="Close"
+      >
+        ✕
+      </button>
+    </div>
+  );
+
   if (!thread) {
     return (
-      <div className="flex-1 h-screen bg-[#000000] rounded-[10px] m-[8px] flex flex-col items-center justify-center text-center p-[20px] select-none">
-        <div className="w-[64px] h-[64px] rounded-full bg-white/5 flex items-center justify-center mb-[16px]">
-          <img src={mohivxLogo} alt="Mohivx" className="w-[42px] h-[42px] object-contain opacity-80" />
+      <div className="flex-1 h-[calc(100vh-16px)] bg-[#000000] rounded-[10px] m-[8px] flex flex-col overflow-hidden relative select-none">
+        {/* Top Header Bar for empty state */}
+        <div className="h-[52px] px-[16px] flex items-center justify-between border-b border-white/5 z-20 titlebar-drag-region">
+          <div className="titlebar-no-drag flex items-center gap-[6px]">
+            <button
+              onClick={() => setLanguage(language === 'ar' ? 'en' : 'ar')}
+              className="text-[11px] font-medium text-white/80 bg-white/5 hover:bg-white/10 px-[8px] py-[4px] rounded-[6px] border border-white/10 transition-colors"
+              title={t('languageLabel')}
+            >
+              {language === 'ar' ? 'EN' : 'عربي'}
+            </button>
+            <button
+              onClick={() => setDirectionMode(isRtl ? 'ltr' : 'rtl')}
+              className="text-[11px] font-mono font-semibold text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-[8px] py-[4px] rounded-[6px] border border-[#0a84ff]/20 transition-colors"
+              title={t('layoutDirection')}
+            >
+              {dir.toUpperCase()} {isRtl ? '←' : '→'}
+            </button>
+          </div>
+
+          <div className="titlebar-no-drag flex items-center gap-[6px]">
+            <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
+              {t('feedback')}
+            </button>
+            {renderWindowControls()}
+          </div>
         </div>
-        <h2 className="text-[18px] font-semibold text-white/90 mb-[4px]">{t('emptyTitle')}</h2>
-        <p className="text-[13px] text-white/50 max-w-[320px]">
-          {t('emptyDesc')}
-        </p>
+
+        {/* Empty state content */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-[20px]">
+          <div className="w-[64px] h-[64px] rounded-full bg-white/5 flex items-center justify-center mb-[16px]">
+            <img src={mohivxLogo} alt="Mohivx" className="w-[42px] h-[42px] object-contain opacity-80" />
+          </div>
+          <h2 className="text-[18px] font-semibold text-white/90 mb-[4px]">{t('emptyTitle')}</h2>
+          <p className="text-[13px] text-white/50 max-w-[320px]">
+            {t('emptyDesc')}
+          </p>
+        </div>
       </div>
     );
   }
@@ -105,10 +161,11 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         </div>
 
         {/* Right Feedback Pill & Window Controls */}
-        <div className="titlebar-no-drag flex items-center gap-[8px]">
+        <div className="titlebar-no-drag flex items-center gap-[6px]">
           <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
             {t('feedback')}
           </button>
+          {renderWindowControls()}
         </div>
       </div>
 
