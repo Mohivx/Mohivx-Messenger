@@ -65,7 +65,3 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-## References & Real-World Examples
-- Detailed before/after code examples and common LLM pitfalls: [references/EXAMPLES.md](./references/EXAMPLES.md).
-- Original guidelines and background documentation: [references/README.md](./references/README.md).
