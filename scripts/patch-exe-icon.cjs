@@ -40,6 +40,18 @@ const targets = [
   path.join(process.env.LOCALAPPDATA || '', 'Programs/Mohivx Messenger/Mohivx Messenger.exe'),
 ];
 
+// Sync built app.asar and assets to locally installed Mohivx Messenger if present
+const installedDir = path.join(process.env.LOCALAPPDATA || '', 'Programs/Mohivx Messenger');
+const builtAsar = path.resolve(__dirname, '../release/win-unpacked/resources/app.asar');
+if (fs.existsSync(installedDir) && fs.existsSync(builtAsar)) {
+  try {
+    const installedAsar = path.join(installedDir, 'resources/app.asar');
+    fs.copyFileSync(builtAsar, installedAsar);
+    console.log(`[PatchIcon] Synced latest app.asar to installed folder: ${installedAsar}`);
+  } catch (err) {
+    console.warn(`[PatchIcon] Could not sync app.asar to installed folder:`, err.message);
+  }
+}
 for (const target of targets) {
   if (fs.existsSync(target)) {
     try {

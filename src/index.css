@@ -46,10 +46,20 @@ body {
 }
 
 /* Custom frameless window drag region */
-.titlebar-drag-region {
+.titlebar-drag-region,
+.window-drag {
   -webkit-app-region: drag;
 }
 
-.titlebar-no-drag {
+.titlebar-no-drag,
+.no-drag {
   -webkit-app-region: no-drag;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

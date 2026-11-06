@@ -242,7 +242,10 @@ export const LeftRail: React.FC<LeftRailProps> = ({
           }}
           onMouseLeave={() => setTooltip(null)}
         >
-          <button className="w-[36px] h-[36px] rounded-[14px] p-[4px] flex items-center justify-center text-[#ededed]/80 hover:text-white hover:bg-white/10 transition-all">
+          <button
+            onClick={() => onSelectFilter('inbox')}
+            className="w-[36px] h-[36px] rounded-[14px] p-[4px] flex items-center justify-center text-[#ededed]/80 hover:text-white hover:bg-white/10 transition-all"
+          >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
               <circle cx="8.5" cy="8.5" r="1.5" />

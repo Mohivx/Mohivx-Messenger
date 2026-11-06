@@ -77,7 +77,7 @@ export const SettingsWindow: React.FC = () => {
         networkId: 'telegram',
         username: 'mohivx',
         displayName: 'Mohivx',
-        avatarUrl: './assets/icon-128.png',
+        avatarUrl: mohivxLogo128,
         connectedAt: '2026-10-31',
         status: 'active',
       },
@@ -436,7 +436,7 @@ export const SettingsWindow: React.FC = () => {
                     >
                       <div className="flex items-center gap-[12px]">
                         <div className="w-[36px] h-[36px] rounded-[10px] bg-white/5 flex items-center justify-center p-[6px]">
-                          <NetworkIcon networkId={acc.networkId} size={24} />
+                          <NetworkIcon network={acc.networkId} size={24} />
                         </div>
                         <div>
                           <div className="text-[13px] font-semibold text-white flex items-center gap-[6px]">
@@ -492,7 +492,7 @@ export const SettingsWindow: React.FC = () => {
                       className="flex items-center gap-[10px] p-[12px] bg-white/[0.02] border border-white/5 rounded-[12px] hover:bg-white/5 hover:border-[#2561fb]/40 transition-all text-start group"
                     >
                       <div className="w-[32px] h-[32px] rounded-[8px] bg-white/5 flex items-center justify-center p-[6px] group-hover:scale-105 transition-transform">
-                        <NetworkIcon networkId={net.id} size={20} />
+                        <NetworkIcon network={net.id} size={20} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[12px] font-semibold text-white">{net.name}</div>

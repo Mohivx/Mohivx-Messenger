@@ -9,17 +9,40 @@ interface ConversationViewProps {
   messages: Message[];
   onSendMessage: (content: string) => void;
   onAddReaction: (messageId: string, emoji: string) => void;
+  activeNetwork?: string | null;
 }
+
+const NETWORK_WEB_URLS: Record<string, { name: string; url: string }> = {
+  whatsapp: { name: 'WhatsApp Web', url: 'https://web.whatsapp.com/' },
+  instagram: { name: 'Instagram Direct', url: 'https://www.instagram.com/direct/inbox/' },
+  discord: { name: 'Discord', url: 'https://discord.com/app' },
+  slack: { name: 'Slack', url: 'https://app.slack.com/client' },
+  facebook: { name: 'Messenger', url: 'https://www.messenger.com/' },
+  x: { name: 'X Messages', url: 'https://x.com/messages' },
+  googlemessages: { name: 'Google Messages', url: 'https://messages.google.com/web/conversations' },
+  googlechat: { name: 'Google Chat', url: 'https://chat.google.com/' },
+  signal: { name: 'Signal', url: 'https://signal.org/' },
+  linkedin: { name: 'LinkedIn Messaging', url: 'https://www.linkedin.com/messaging/' },
+  line: { name: 'LINE', url: 'https://line.me/' },
+  matrix: { name: 'Element (Matrix)', url: 'https://app.element.io/' },
+  viber: { name: 'Viber', url: 'https://www.viber.com/' },
+  wechat: { name: 'WeChat Web', url: 'https://web.wechat.com/' },
+};
 
 export const ConversationView: React.FC<ConversationViewProps> = ({
   thread,
   messages,
   onSendMessage,
   onAddReaction,
+  activeNetwork,
 }) => {
   const { t, isRtl, language, setLanguage, dir, setDirectionMode } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [webViewMode, setWebViewMode] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -30,6 +53,14 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (activeNetwork && activeNetwork !== 'telegram' && NETWORK_WEB_URLS[activeNetwork]) {
+      setWebViewMode(true);
+    } else {
+      setWebViewMode(false);
+    }
+  }, [activeNetwork, thread?.id]);
+
   const handleSend = () => {
     if (!inputText.trim() || !thread) return;
     try {
@@ -39,6 +70,25 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     } catch {}
     onSendMessage(inputText.trim());
     setInputText('');
+    setReplyingTo(null);
+    setShowEmojiPicker(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && thread) {
+      onSendMessage(`📎 ${file.name}`);
+      e.target.value = '';
+    }
+  };
+
+  const handleFeedback = () => {
+    const api = (window as any).mohivxApi;
+    if (api?.updater?.openReleasePage) {
+      api.updater.openReleasePage('https://github.com/Mohivx/Mohivx-Messenger/issues');
+    } else {
+      window.open('https://github.com/Mohivx/Mohivx-Messenger/issues', '_blank');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -74,6 +124,52 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     </div>
   );
 
+  const activeWebConfig =
+    activeNetwork && activeNetwork !== 'telegram' ? NETWORK_WEB_URLS[activeNetwork] : null;
+
+  if (webViewMode && activeWebConfig && activeNetwork) {
+    return (
+      <div className="flex-1 h-[calc(100vh-16px)] bg-[#000000] rounded-[10px] m-[8px] flex flex-col overflow-hidden relative select-none">
+        <div className="h-[52px] px-[16px] flex items-center justify-between border-b border-white/5 z-20 titlebar-drag-region">
+          <div className="titlebar-no-drag flex items-center gap-[8px]">
+            <NetworkIcon network={activeNetwork as any} size={22} />
+            <span className="text-[13px] font-semibold text-white">{activeWebConfig.name}</span>
+            <span className="text-[10px] px-[7px] py-[2px] rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-medium">
+              Live Web Session
+            </span>
+          </div>
+
+          <div className="titlebar-no-drag flex items-center gap-[6px]">
+            <button
+              onClick={() => setWebViewMode(false)}
+              className="text-[11px] font-medium text-white/80 bg-white/5 hover:bg-white/10 px-[10px] py-[4px] rounded-[6px] border border-white/10 transition-colors"
+            >
+              {language === 'ar' ? 'عرض كرسائل موحدة' : 'Unified View'}
+            </button>
+            <button
+              onClick={() => (window as any).mohivxApi?.openBraveUrl?.(activeWebConfig.url)}
+              className="text-[11px] font-medium text-[#0a84ff] bg-[#0a84ff]/10 hover:bg-[#0a84ff]/20 px-[10px] py-[4px] rounded-[6px] border border-[#0a84ff]/20 transition-colors"
+            >
+              {language === 'ar' ? 'فتح في Brave' : 'Open in Brave'}
+            </button>
+            {renderWindowControls()}
+          </div>
+        </div>
+
+        <div className="flex-1 w-full h-full bg-[#141415] relative">
+          {React.createElement('webview' as any, {
+            src: activeWebConfig.url,
+            partition: `persist:mohivx_${activeNetwork}`,
+            useragent:
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            allowpopups: 'true',
+            style: { width: '100%', height: '100%', border: 'none' },
+          })}
+        </div>
+      </div>
+    );
+  }
+
   if (!thread) {
     return (
       <div className="flex-1 h-[calc(100vh-16px)] bg-[#000000] rounded-[10px] m-[8px] flex flex-col overflow-hidden relative select-none">
@@ -97,7 +193,18 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           </div>
 
           <div className="titlebar-no-drag flex items-center gap-[6px]">
-            <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
+            {activeWebConfig && (
+              <button
+                onClick={() => setWebViewMode(true)}
+                className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-[10px] py-[4px] rounded-[6px] border border-emerald-500/20 transition-colors"
+              >
+                {language === 'ar' ? `فتح ${activeWebConfig.name}` : `Open ${activeWebConfig.name}`}
+              </button>
+            )}
+            <button
+              onClick={handleFeedback}
+              className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors"
+            >
               {t('feedback')}
             </button>
             {renderWindowControls()}
@@ -162,7 +269,18 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
         {/* Right Feedback Pill & Window Controls */}
         <div className="titlebar-no-drag flex items-center gap-[6px]">
-          <button className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors">
+          {thread.networkId !== 'telegram' && NETWORK_WEB_URLS[thread.networkId] && (
+            <button
+              onClick={() => setWebViewMode(true)}
+              className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-[10px] py-[4px] rounded-[6px] border border-emerald-500/20 transition-colors"
+            >
+              {language === 'ar' ? 'فتح الجلسة الحية' : 'Live Web View'}
+            </button>
+          )}
+          <button
+            onClick={handleFeedback}
+            className="text-[11px] font-medium text-white/90 bg-black/60 hover:bg-white/10 px-[10px] py-[4px] rounded-[4px] border border-white/10 transition-colors"
+          >
             {t('feedback')}
           </button>
           {renderWindowControls()}
@@ -285,7 +403,11 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                     </button>
                   ))}
                   <div className="w-[1px] h-[14px] bg-white/20 mx-[2px]" />
-                  <button className="text-white/60 hover:text-white p-[2px]">
+                  <button
+                    onClick={() => setReplyingTo(msg)}
+                    title={t('reply')}
+                    className="text-white/60 hover:text-white p-[2px]"
+                  >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[13px] h-[13px]">
                       <polyline points="9 17 4 12 9 7" />
                       <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
@@ -299,10 +421,51 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Reply Banner */}
+      {replyingTo && (
+        <div className="px-[16px] py-[6px] bg-[#141415] border-t border-white/10 flex items-center justify-between text-[12px] z-20">
+          <div className="flex items-center gap-[8px] truncate">
+            <span className="text-[#0a84ff] font-semibold">{t('reply')} {replyingTo.senderName}:</span>
+            <span className="text-white/60 truncate">{replyingTo.content}</span>
+          </div>
+          <button
+            onClick={() => setReplyingTo(null)}
+            className="text-white/40 hover:text-white px-[4px]"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Emoji Picker Popover */}
+      {showEmojiPicker && (
+        <div className="absolute bottom-[58px] end-[58px] z-30 bg-[#1c1c1e] border border-white/10 rounded-[14px] p-[10px] shadow-2xl grid grid-cols-6 gap-[6px]">
+          {['😀', '😂', '❤️', '🔥', '👍', '🙏', '🎉', '✨', '😎', '🤔', '💯', '🚀'].map((em) => (
+            <button
+              key={em}
+              onClick={() => {
+                setInputText((prev) => prev + em);
+                setShowEmojiPicker(false);
+              }}
+              className="w-[32px] h-[32px] rounded-[8px] hover:bg-white/10 flex items-center justify-center text-[18px] transition-transform hover:scale-110"
+            >
+              {em}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Bottom Composer Bar (52px) */}
       <div className="h-[52px] px-[12px] pb-[8px] pt-[4px] bg-[#000000] flex items-center gap-[8px] z-20">
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          onChange={handleFileChange}
+        />
         {/* Attachment '+' Button */}
         <button
+          onClick={() => fileInputRef.current?.click()}
           title={t('addAttachment')}
           className="w-[36px] h-[36px] rounded-full bg-[#1c1c1d] hover:bg-white/10 flex items-center justify-center text-[#9b9ba2] hover:text-white transition-colors shrink-0"
         >
@@ -330,7 +493,10 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           {/* Action Icons in Capsule */}
           <div className="flex items-center gap-[6px]">
             {/* Emoji Button */}
-            <button className="text-[#9b9ba2] hover:text-white transition-colors">
+            <button
+              onClick={() => setShowEmojiPicker((prev) => !prev)}
+              className="text-[#9b9ba2] hover:text-white transition-colors"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]">
                 <circle cx="12" cy="12" r="10" />
                 <path d="M8 14s1.5 2 4 2 4-2 4-2" />
@@ -340,7 +506,11 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             </button>
 
             {/* Record Audio Button */}
-            <button title={t('recordAudio')} className="text-[#9b9ba2] hover:text-white transition-colors">
+            <button
+              onClick={() => onSendMessage('🎤 Voice Message (0:05)')}
+              title={t('recordAudio')}
+              className="text-[#9b9ba2] hover:text-white transition-colors"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2" />

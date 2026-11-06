@@ -113,6 +113,7 @@ function createMainWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
+      webviewTag: true,
     },
   });
 
@@ -166,6 +167,7 @@ function openSettingsWindow(initialTab = 'profile') {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
+      webviewTag: true,
     },
   });
 
@@ -173,12 +175,13 @@ function openSettingsWindow(initialTab = 'profile') {
     settingsWindow.setIcon(appIcon);
   }
 
-  const settingsUrl =
-    isDev && process.env.VITE_DEV_SERVER_URL
-      ? `${process.env.VITE_DEV_SERVER_URL}#settings?tab=${initialTab}`
-      : `file://${path.join(__dirname, '../dist/index.html')}#settings?tab=${initialTab}`;
-
-  settingsWindow.loadURL(settingsUrl);
+  if (isDev && process.env.VITE_DEV_SERVER_URL) {
+    settingsWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}#settings?tab=${initialTab}`);
+  } else {
+    settingsWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
+      hash: `settings?tab=${initialTab}`,
+    });
+  }
 
   settingsWindow.on('closed', () => {
     settingsWindow = null;

@@ -11,6 +11,7 @@ import { AddAccountModal } from './components/AddAccountModal';
 import { TelegramAuthModal } from './components/TelegramAuthModal';
 import { UpdateNotification } from './components/UpdateNotification';
 import { useLanguage } from './i18n/LanguageContext';
+import mohivxLogo128 from './assets/icon-128.png';
 
 export const App: React.FC = () => {
   const { dir, setDirectionMode, setLanguage } = useLanguage();
@@ -96,7 +97,7 @@ export const App: React.FC = () => {
               networkId: 'telegram',
               username: 'Connected MTProto',
               displayName: 'Telegram Account',
-              avatarUrl: './assets/icon-128.png',
+              avatarUrl: mohivxLogo128,
               connectedAt: new Date().toISOString().split('T')[0],
               status: 'active',
             },
@@ -453,12 +454,13 @@ export const App: React.FC = () => {
           networkId: network,
           username: sourceBrowser ? `@mohivx • ${sourceBrowser}` : '@mohivx • Connected Bridge',
           displayName: `${label} Account`,
-          avatarUrl: './assets/icon-128.png',
+          avatarUrl: mohivxLogo128,
           connectedAt: new Date().toISOString().split('T')[0],
           status: 'active',
         },
       ];
     });
+    setActiveNetwork(network);
   };
 
   const handleTelegramAuthSuccess = async () => {
@@ -530,6 +532,7 @@ export const App: React.FC = () => {
         messages={currentMessages}
         onSendMessage={handleSendMessage}
         onAddReaction={handleAddReaction}
+        activeNetwork={activeNetwork}
       />
 
       {/* Modals & Overlays */}

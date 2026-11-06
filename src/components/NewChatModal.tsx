@@ -60,7 +60,13 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
 
         {/* Quick Action Buttons */}
         <div className="p-[12px] flex flex-col gap-[4px] border-b border-white/5">
-          <button className="flex items-center gap-[10px] p-[8px] rounded-[10px] hover:bg-white/10 text-left transition-colors">
+          <button
+            onClick={() => {
+              onCreateChat(search.trim() || t('newGroup'), selectedNetwork);
+              onClose();
+            }}
+            className="flex items-center gap-[10px] p-[8px] rounded-[10px] hover:bg-white/10 text-left transition-colors"
+          >
             <div className="w-[32px] h-[32px] rounded-full bg-white/10 flex items-center justify-center text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[16px] h-[16px]">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -75,7 +81,13 @@ export const NewChatModal: React.FC<NewChatModalProps> = ({
             </div>
           </button>
 
-          <button className="flex items-center gap-[10px] p-[8px] rounded-[10px] hover:bg-white/10 text-left transition-colors">
+          <button
+            onClick={() => {
+              onCreateChat(search.trim() || t('newBroadcast'), selectedNetwork);
+              onClose();
+            }}
+            className="flex items-center gap-[10px] p-[8px] rounded-[10px] hover:bg-white/10 text-left transition-colors"
+          >
             <div className="w-[32px] h-[32px] rounded-full bg-white/10 flex items-center justify-center text-white">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[16px] h-[16px]">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
