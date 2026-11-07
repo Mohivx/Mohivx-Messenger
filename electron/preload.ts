@@ -31,6 +31,13 @@ contextBridge.exposeInMainWorld('mohivxApi', {
     ipcRenderer.on('app-settings-updated', handler);
     return () => ipcRenderer.removeListener('app-settings-updated', handler);
   },
+  archiveBulkChats: (payload: { filter: 'all' | 'unread'; days: number }) =>
+    ipcRenderer.invoke('archive-bulk-chats', payload),
+  onArchiveBulkChats: (callback: (payload: { filter: 'all' | 'unread'; days: number }) => void) => {
+    const handler = (_: any, payload: any) => callback(payload);
+    ipcRenderer.on('archive-bulk-chats', handler);
+    return () => ipcRenderer.removeListener('archive-bulk-chats', handler);
+  },
   clearAppCache: () => ipcRenderer.invoke('clear-app-cache'),
   openAppDataFolder: () => ipcRenderer.invoke('open-app-folder'),
 

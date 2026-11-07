@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ViewFilter, NetworkId, Thread, Message, Account, NetworkInfo, UpdateInfo } from './types';
+import {
+  ViewFilter,
+  NetworkId,
+  Thread,
+  Message,
+  Account,
+  NetworkInfo,
+  UpdateInfo,
+  AppSettings,
+  DEFAULT_APP_SETTINGS,
+} from './types';
 import { INITIAL_NETWORKS, INITIAL_ACCOUNTS, INITIAL_THREADS, INITIAL_MESSAGES } from './data/mockData';
 import { LeftRail } from './components/LeftRail';
 import { ThreadList } from './components/ThreadList';
@@ -11,10 +21,12 @@ import { AddAccountModal } from './components/AddAccountModal';
 import { TelegramAuthModal } from './components/TelegramAuthModal';
 import { UpdateNotification } from './components/UpdateNotification';
 import { useLanguage } from './i18n/LanguageContext';
+import mohivxIcon64 from './assets/icon-64.png';
 import mohivxLogo128 from './assets/icon-128.png';
 
 export const App: React.FC = () => {
   const { dir, setDirectionMode, setLanguage } = useLanguage();
+  const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_APP_SETTINGS);
   const [currentFilter, setCurrentFilter] = useState<ViewFilter>('inbox');
   const [filterUnreadOnly, setFilterUnreadOnly] = useState(false);
   const [activeNetwork, setActiveNetwork] = useState<NetworkId | null>(null);
@@ -48,32 +60,57 @@ export const App: React.FC = () => {
     } catch {}
   }, [accounts]);
 
-  // Synchronize settings from Electron / Standalone Settings Window
+  // Synchronize ALL settings from Electron / Standalone Settings Window
   useEffect(() => {
     const api = (window as any).mohivxApi;
     if (!api) return;
 
+    const applySettings = (s: Partial<AppSettings>) => {
+      if (!s) return;
+      setAppSettings((prev) => ({ ...prev, ...s }));
+      if (s.directionMode) setDirectionMode(s.directionMode);
+      if (s.language === 'ar' || s.language === 'en') {
+        setLanguage(s.language);
+      }
+      if (s.zoomLevel) {
+        document.body.style.zoom = `${s.zoomLevel}%`;
+      }
+    };
+
     if (api.getAppSettings) {
-      api.getAppSettings().then((s: any) => {
-        if (s) {
-          if (s.directionMode) setDirectionMode(s.directionMode);
-          if (s.language) setLanguage(s.language);
-        }
-      }).catch(() => {});
+      api
+        .getAppSettings()
+        .then((s: any) => applySettings(s))
+        .catch(() => {});
     }
 
+    const cleanups: (() => void)[] = [];
+
     if (api.onAppSettingsUpdated) {
-      const cleanup = api.onAppSettingsUpdated((s: any) => {
-        if (s) {
-          if (s.directionMode) setDirectionMode(s.directionMode);
-          if (s.language) setLanguage(s.language);
-        }
-      });
-      return () => {
-        if (typeof cleanup === 'function') cleanup();
-      };
+      const c1 = api.onAppSettingsUpdated((s: any) => applySettings(s));
+      if (typeof c1 === 'function') cleanups.push(c1);
     }
-  }, [setDirectionMode, setLanguage]);
+
+    if (api.onArchiveBulkChats) {
+      const c2 = api.onArchiveBulkChats((payload: { filter: 'all' | 'unread'; days: number }) => {
+        setThreads((prev) =>
+          prev.map((t) => {
+            if (payload.filter === 'unread' && t.unreadCount === 0) return t;
+            return {
+              ...t,
+              isArchived: true,
+              unreadCount: appSettings.markReadOnArchive ? 0 : t.unreadCount,
+            };
+          })
+        );
+      });
+      if (typeof c2 === 'function') cleanups.push(c2);
+    }
+
+    return () => {
+      cleanups.forEach((fn) => fn());
+    };
+  }, [setDirectionMode, setLanguage, appSettings.markReadOnArchive]);
 
   // Sync Telegram threads and check connection status
   const checkTelegramStatus = useCallback(async () => {
@@ -139,11 +176,14 @@ export const App: React.FC = () => {
       }
     });
 
-    api.updater.checkForUpdates().then((info: UpdateInfo) => {
-      if (info && info.updateAvailable) {
-        setActiveUpdate(info);
-      }
-    }).catch(() => {});
+    api.updater
+      .checkForUpdates()
+      .then((info: UpdateInfo) => {
+        if (info && info.updateAvailable) {
+          setActiveUpdate(info);
+        }
+      })
+      .catch(() => {});
 
     return () => {
       if (typeof removeListener === 'function') removeListener();
@@ -158,11 +198,20 @@ export const App: React.FC = () => {
     const cleanup = api.onIncomingMessage((msg: any) => {
       if (!msg?.threadId) return;
 
-      try {
-        const audio = new Audio('./sounds/receive.wav');
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-      } catch {}
+      if (appSettings.soundEnabled) {
+        try {
+          const audio = new Audio('./sounds/receive.wav');
+          audio.volume = Math.min(1, Math.max(0, (appSettings.soundVolume ?? 80) / 100));
+          audio.play().catch(() => {});
+        } catch {}
+      }
+
+      if (appSettings.autoCopyOtp && typeof msg.content === 'string') {
+        const otpMatch = msg.content.match(/\b(\d{4,8})\b/);
+        if (otpMatch && /code|otp|verification|login|رمز|كود/i.test(msg.content)) {
+          navigator.clipboard?.writeText(otpMatch[1]);
+        }
+      }
 
       setMessagesMap((prev) => {
         const existing = prev[msg.threadId] || [];
@@ -183,7 +232,10 @@ export const App: React.FC = () => {
                   lastMessageSnippet: msg.content || '[Media]',
                   lastMessageSender: msg.senderName || '',
                   lastMessageTime: msg.timestamp || '',
-                  unreadCount: selectedThreadId === msg.threadId ? 0 : t.unreadCount + 1,
+                  unreadCount:
+                    selectedThreadId === msg.threadId && !appSettings.incognitoMode
+                      ? 0
+                      : t.unreadCount + 1,
                 }
               : t
           );
@@ -192,7 +244,9 @@ export const App: React.FC = () => {
             id: msg.threadId,
             networkId: msg.networkId || 'telegram',
             title: msg.senderName || 'New Conversation',
-            avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(msg.senderName || 'TG')}&background=2EA4DB&color=fff`,
+            avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              msg.senderName || 'TG'
+            )}&background=2EA4DB&color=fff`,
             isGroup: false,
             lastMessageSnippet: msg.content || '[Media]',
             lastMessageSender: msg.senderName || '',
@@ -207,7 +261,7 @@ export const App: React.FC = () => {
     return () => {
       if (typeof cleanup === 'function') cleanup();
     };
-  }, [selectedThreadId]);
+  }, [selectedThreadId, appSettings.soundEnabled, appSettings.soundVolume, appSettings.incognitoMode, appSettings.autoCopyOtp]);
 
   // Network auth success listener from external login window
   useEffect(() => {
@@ -233,7 +287,7 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  const handleOpenSettings = (tab = 'profile') => {
+  const handleOpenSettings = (tab = 'general') => {
     const api = (window as any).mohivxApi;
     if (api?.openSettingsWindow) {
       api.openSettingsWindow(tab);
@@ -242,7 +296,66 @@ export const App: React.FC = () => {
     }
   };
 
-  // Global hotkeys
+  // Toggle Archive on a Thread (respecting markReadOnArchive and afterArchive settings)
+  const handleToggleArchiveThread = useCallback(
+    (threadId: string) => {
+      setThreads((prev) => {
+        const idx = prev.findIndex((t) => t.id === threadId);
+        if (idx === -1) return prev;
+        const target = prev[idx];
+        const nextArchived = !target.isArchived;
+
+        const updated = prev.map((t) =>
+          t.id === threadId
+            ? {
+                ...t,
+                isArchived: nextArchived,
+                unreadCount:
+                  nextArchived && appSettings.markReadOnArchive ? 0 : t.unreadCount,
+              }
+            : t
+        );
+
+        if (nextArchived && selectedThreadId === threadId) {
+          const visible = prev.filter((t) => !t.isArchived && t.id !== threadId);
+          if (appSettings.afterArchive === 'close' || visible.length === 0) {
+            setSelectedThreadId(null);
+          } else if (appSettings.afterArchive === 'previous') {
+            setSelectedThreadId(visible[Math.max(0, idx - 1)]?.id || visible[0].id);
+          } else {
+            setSelectedThreadId(visible[Math.min(visible.length - 1, idx)]?.id || visible[0].id);
+          }
+        }
+        return updated;
+      });
+    },
+    [appSettings.markReadOnArchive, appSettings.afterArchive, selectedThreadId]
+  );
+
+  const handleTogglePinThread = useCallback((threadId: string) => {
+    setThreads((prev) =>
+      prev.map((t) => (t.id === threadId ? { ...t, isPinned: !t.isPinned } : t))
+    );
+  }, []);
+
+  const handleToggleReadThread = useCallback(
+    (threadId: string) => {
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === threadId ? { ...t, unreadCount: t.unreadCount > 0 ? 0 : 1 } : t
+        )
+      );
+      if (appSettings.afterMarkReadUnread === 'next' && selectedThreadId === threadId) {
+        const visible = threads.filter((t) => !t.isArchived && t.id !== threadId);
+        if (visible.length > 0) {
+          setSelectedThreadId(visible[0].id);
+        }
+      }
+    },
+    [appSettings.afterMarkReadUnread, selectedThreadId, threads]
+  );
+
+  // Global hotkeys (Ctrl+K, Ctrl+N, Ctrl+,, Ctrl+E, Ctrl+Shift+U)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key.toLowerCase() === 'k') {
@@ -253,15 +366,28 @@ export const App: React.FC = () => {
         setNewChatOpen(true);
       } else if (e.ctrlKey && e.key === ',') {
         e.preventDefault();
-        handleOpenSettings('profile');
+        handleOpenSettings('general');
+      } else if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        if (selectedThreadId) handleToggleArchiveThread(selectedThreadId);
+      } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'u') {
+        e.preventDefault();
+        if (selectedThreadId) handleToggleReadThread(selectedThreadId);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [selectedThreadId, handleToggleArchiveThread, handleToggleReadThread]);
 
   const handleSelectThread = async (threadId: string) => {
     setSelectedThreadId(threadId);
+
+    // Clear unread count ONLY if incognitoMode is OFF
+    if (!appSettings.incognitoMode) {
+      setThreads((prev) =>
+        prev.map((th) => (th.id === threadId ? { ...th, unreadCount: 0 } : th))
+      );
+    }
 
     const t = threads.find((th) => th.id === threadId);
     if (t?.networkId === 'telegram' && isTelegramConnected) {
@@ -301,8 +427,9 @@ export const App: React.FC = () => {
                 ? {
                     ...t,
                     lastMessageSnippet: content,
-                    lastMessageSender: 'أنت',
+                    lastMessageSender: 'You',
                     lastMessageTime: sentMsg.timestamp,
+                    unreadCount: 0,
                   }
                 : t
             )
@@ -311,7 +438,7 @@ export const App: React.FC = () => {
         }
       } catch (err: any) {
         console.error('[App] Failed to send Telegram message:', err);
-        alert(`فشل إرسال الرسالة عبر Telegram: ${err?.message || 'خطأ غير معروف'}`);
+        alert(`Failed to send Telegram message: ${err?.message || 'Unknown error'}`);
         return;
       }
     }
@@ -320,9 +447,9 @@ export const App: React.FC = () => {
       id: `msg-${Date.now()}`,
       threadId: selectedThreadId,
       senderId: 'me',
-      senderName: 'Mohivx',
+      senderName: appSettings.displayName || 'Mohivx',
       content,
-      timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isOutgoing: true,
       networkId: currentThread?.networkId || 'telegram',
       status: 'sent',
@@ -339,8 +466,9 @@ export const App: React.FC = () => {
           ? {
               ...t,
               lastMessageSnippet: content,
-              lastMessageSender: 'أنت',
+              lastMessageSender: 'You',
               lastMessageTime: newMessage.timestamp,
+              unreadCount: 0,
             }
           : t
       )
@@ -377,8 +505,8 @@ export const App: React.FC = () => {
       title: name,
       avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces`,
       isGroup: false,
-      lastMessageSnippet: 'محادثة جديدة نشطة',
-      lastMessageTime: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+      lastMessageSnippet: 'Active conversation',
+      lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       unreadCount: 0,
     };
     setThreads((prev) => [newThread, ...prev]);
@@ -391,7 +519,7 @@ export const App: React.FC = () => {
           threadId: newId,
           senderId: 'contact',
           senderName: name,
-          content: 'أهلاً بك في Mohivx Messenger!',
+          content: 'Welcome to Mohivx Messenger!',
           timestamp: newThread.lastMessageTime,
           isOutgoing: false,
           networkId: network,
@@ -479,7 +607,9 @@ export const App: React.FC = () => {
     }
     setNetworks((prev) =>
       prev.map((n) =>
-        n.id === account.networkId ? { ...n, connected: false, status: 'disconnected', unreadCount: 0 } : n
+        n.id === account.networkId
+          ? { ...n, connected: false, status: 'disconnected', unreadCount: 0 }
+          : n
       )
     );
     setAccounts((prev) => prev.filter((a) => a.id !== account.id));
@@ -490,50 +620,103 @@ export const App: React.FC = () => {
 
   const selectedThread = threads.find((t) => t.id === selectedThreadId) || null;
   const currentMessages = selectedThreadId ? messagesMap[selectedThreadId] || [] : [];
-  const totalUnread = threads.reduce((acc, t) => acc + t.unreadCount, 0);
+  const totalUnread = threads.filter((t) => !t.isArchived).reduce((acc, t) => acc + (t.unreadCount > 0 ? 1 : 0), 0);
   const connectedNetworkIds = accounts.map((a) => a.networkId);
 
   return (
-    <div dir={dir} className="flex w-screen h-screen bg-[#232323] overflow-hidden select-none font-sans">
-      {/* 1. Left Rail (68px) */}
-      <LeftRail
-        currentFilter={currentFilter}
-        onSelectFilter={setCurrentFilter}
-        unreadCount={totalUnread}
-        onOpenSettings={() => handleOpenSettings('profile')}
-        onOpenAddAccount={() => setAddAccountOpen(true)}
-        activeNetwork={activeNetwork}
-        connectedNetworks={connectedNetworkIds}
-        onSelectNetwork={(net) => {
-          setActiveNetwork(net);
-          if (net === 'telegram' && !isTelegramConnected && !connectedNetworkIds.includes('telegram')) {
-            setTelegramAuthOpen(true);
-          }
-        }}
-      />
+    <div
+      className={`flex flex-col w-screen h-screen ${
+        appSettings.theme === 'light' ? 'bg-[#f2f2f7] text-[#1c1c1e]' : 'bg-[#202228] text-[#f5f5f7]'
+      } overflow-hidden select-none font-sans`}
+    >
+      {/* Top Native-Style Beeper Window Titlebar (32px, always LTR so controls stay on right) */}
+      <header
+        dir="ltr"
+        className="h-[32px] bg-[#202228] flex items-center justify-between pl-[12px] pr-[2px] shrink-0 titlebar-drag-region"
+      >
+        <div className="flex items-center gap-[8px]">
+          <img src={mohivxIcon64} alt="Mohivx" className="w-[15px] h-[15px] rounded-[4px]" />
+          <span className="text-[12px] font-medium text-white/85">Beeper</span>
+        </div>
 
-      {/* 2. Thread List (252px) */}
-      <ThreadList
-        threads={threads}
-        selectedThreadId={selectedThreadId}
-        onSelectThread={handleSelectThread}
-        currentFilter={currentFilter}
-        onSelectFilter={setCurrentFilter}
-        filterUnreadOnly={filterUnreadOnly}
-        onToggleFilterUnread={() => setFilterUnreadOnly(!filterUnreadOnly)}
-        onOpenSearch={() => setSearchOpen(true)}
-        onOpenNewChat={() => setNewChatOpen(true)}
-        activeNetwork={activeNetwork}
-      />
+        <div className="flex items-center titlebar-no-drag">
+          <button
+            onClick={() => (window as any).mohivxApi?.minimizeWindow?.()}
+            className="w-[40px] h-[30px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors text-[12px]"
+            title="Minimize"
+          >
+            ─
+          </button>
+          <button
+            onClick={() => (window as any).mohivxApi?.maximizeWindow?.()}
+            className="w-[40px] h-[30px] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.08] transition-colors text-[11px]"
+            title="Maximize"
+          >
+            ▢
+          </button>
+          <button
+            onClick={() => (window as any).mohivxApi?.closeWindow?.()}
+            className="w-[44px] h-[30px] flex items-center justify-center text-white/60 hover:text-white hover:bg-[#e81123] transition-colors text-[13px]"
+            title="Close"
+          >
+            ✕
+          </button>
+        </div>
+      </header>
 
-      {/* 3. Conversation Pane */}
-      <ConversationView
-        thread={selectedThread}
-        messages={currentMessages}
-        onSendMessage={handleSendMessage}
-        onAddReaction={handleAddReaction}
-        activeNetwork={activeNetwork}
-      />
+      {/* Main 3-Pane Beeper Workspace */}
+      <div dir={dir} className="flex-1 flex overflow-hidden">
+        {/* 1. Left Rail (56px, toggleable via Appearance -> Show sidebar) */}
+        {appSettings.showSidebar && (
+          <LeftRail
+            currentFilter={currentFilter}
+            onSelectFilter={setCurrentFilter}
+            unreadCount={totalUnread}
+            showUnreads={appSettings.showUnreads}
+            colorizeNetworkIcons={appSettings.colorizeNetworkIcons}
+            onOpenSettings={() => handleOpenSettings('general')}
+            onOpenAddAccount={() => setAddAccountOpen(true)}
+            activeNetwork={activeNetwork}
+            connectedNetworks={connectedNetworkIds}
+            onSelectNetwork={(net) => {
+              setActiveNetwork(net);
+              if (net === 'telegram' && !isTelegramConnected && !connectedNetworkIds.includes('telegram')) {
+                setTelegramAuthOpen(true);
+              }
+            }}
+          />
+        )}
+
+        {/* 2. Thread List (260px) */}
+        <ThreadList
+          threads={threads}
+          selectedThreadId={selectedThreadId}
+          onSelectThread={handleSelectThread}
+          onToggleArchiveThread={handleToggleArchiveThread}
+          onTogglePinThread={handleTogglePinThread}
+          onToggleReadThread={handleToggleReadThread}
+          currentFilter={currentFilter}
+          onSelectFilter={setCurrentFilter}
+          filterUnreadOnly={filterUnreadOnly}
+          onToggleFilterUnread={() => setFilterUnreadOnly(!filterUnreadOnly)}
+          onOpenSearch={() => setSearchOpen(true)}
+          onOpenNewChat={() => setNewChatOpen(true)}
+          activeNetwork={activeNetwork}
+          settings={appSettings}
+        />
+
+        {/* 3. Conversation Pane */}
+        <ConversationView
+          thread={selectedThread}
+          messages={currentMessages}
+          onSendMessage={handleSendMessage}
+          onAddReaction={handleAddReaction}
+          onToggleArchive={handleToggleArchiveThread}
+          onTogglePin={handleTogglePinThread}
+          activeNetwork={activeNetwork}
+          settings={appSettings}
+        />
+      </div>
 
       {/* Modals & Overlays */}
       <CommandPalette
@@ -567,19 +750,14 @@ export const App: React.FC = () => {
         connectedNetworks={connectedNetworkIds}
       />
 
-      {/* Real Telegram MTProto Auth Modal */}
       <TelegramAuthModal
         isOpen={telegramAuthOpen}
         onClose={() => setTelegramAuthOpen(false)}
         onSuccess={handleTelegramAuthSuccess}
       />
 
-      {/* In-App Update Prompt Banner */}
       {activeUpdate && (
-        <UpdateNotification
-          updateInfo={activeUpdate}
-          onDismiss={() => setActiveUpdate(null)}
-        />
+        <UpdateNotification updateInfo={activeUpdate} onDismiss={() => setActiveUpdate(null)} />
       )}
     </div>
   );

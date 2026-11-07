@@ -57,30 +57,83 @@ function getSettingsFilePath(): string {
 }
 
 function readAppSettings(): Record<string, any> {
-  try {
-    const file = getSettingsFilePath();
-    if (fs.existsSync(file)) {
-      return JSON.parse(fs.readFileSync(file, 'utf8'));
-    }
-  } catch {}
-  return {
+  const defaults = {
+    incognitoMode: false,
+    showTypingIndicator: true,
+    language: 'en',
+    directionMode: 'ltr',
+    defaultRemindLater: 'if_no_reply',
+    archiveOnReminder: true,
+    syncArchiveState: true,
+    markReadOnArchive: true,
+    afterArchive: 'next',
+    afterMarkReadUnread: 'next',
+    doubleClickMessageAction: 'reply',
+    undoSendDelay: 5,
+    includeTimestampsOnCopy: false,
+    emojiAutocomplete: true,
+    autoCopyOtp: true,
     launchOnStartup: false,
     closeToTray: true,
     minimizeToTray: true,
     hardwareAcceleration: true,
+
+    showSidebar: true,
+    compactPinnedThreads: false,
+    showUnreads: true,
+    messagePreviews: true,
+    compactChatList: false,
+    showNetworkIcons: true,
+    colorizeNetworkIcons: true,
     theme: 'dark',
     density: 'comfortable',
-    directionMode: 'auto',
-    language: 'ar',
-    notifications: true,
+    fontSize: 13,
+    zoomLevel: 100,
+
     soundEnabled: true,
+    soundVolume: 80,
+    notifications: true,
+    notifyGroupMessages: true,
+    notifyInFocus: false,
+    notifyReactions: true,
+    notifyTyping: false,
+    delayNotifications: 'off',
     unreadBadge: true,
     dnd: false,
+
     aiModel: 'gemini-2.0-flash',
     geminiApiKey: '',
+    openaiApiKey: '',
     autoSummarize: true,
     smartReplies: true,
+    autoTranslate: true,
+    voiceTranscription: true,
+    aiMentions: true,
+
+    desktopApiEnabled: true,
+    remoteAccessEnabled: false,
+
+    displayName: 'mohivx',
+    username: '@mohivx2',
+    email: 'm0559520809@gmail.com',
+    bio: 'Software Engineer & AI Architect',
+    planTier: 'Free',
   };
+
+  try {
+    const file = getSettingsFilePath();
+    if (fs.existsSync(file)) {
+      const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (!saved._beeperV2Migrated) {
+        saved.language = 'en';
+        saved.directionMode = 'ltr';
+        saved._beeperV2Migrated = true;
+        writeAppSettings({ ...defaults, ...saved });
+      }
+      return { ...defaults, ...saved };
+    }
+  } catch {}
+  return defaults;
 }
 
 function writeAppSettings(data: Record<string, any>) {
@@ -144,7 +197,7 @@ function createMainWindow() {
   });
 }
 
-function openSettingsWindow(initialTab = 'profile') {
+function openSettingsWindow(initialTab = 'general') {
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.show();
     settingsWindow.focus();
@@ -202,7 +255,7 @@ function createTray() {
     {
       label: 'Settings',
       click: () => {
-        openSettingsWindow('profile');
+        openSettingsWindow('general');
       },
     },
     { type: 'separator' },
@@ -261,7 +314,14 @@ ipcMain.on('notify', (_, { title, body }) => {
 
 // Standalone Settings Window IPC
 ipcMain.handle('open-settings-window', (_, tab?: string) => {
-  openSettingsWindow(tab || 'profile');
+  openSettingsWindow(tab || 'general');
+  return { success: true };
+});
+
+ipcMain.handle('archive-bulk-chats', (_, payload: { filter: 'all' | 'unread'; days: number }) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('archive-bulk-chats', payload);
+  }
   return { success: true };
 });
 
