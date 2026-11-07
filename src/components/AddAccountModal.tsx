@@ -74,15 +74,44 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
     n.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleConnect = async (net: NetworkId) => {
-    if (net === 'telegram') {
-      onConnectNetwork('telegram');
-      onClose();
-      return;
+  const handleConnectInBrowser = async (net: NetworkId) => {
+    const api = (window as any).mohivxApi;
+    if (api?.openNetworkInBrowser) {
+      await api.openNetworkInBrowser(net);
+    } else if (api?.openBraveUrl) {
+      const urls: Record<string, string> = {
+        telegram: 'https://web.telegram.org/k/',
+        whatsapp: 'https://web.whatsapp.com/',
+        x: 'https://x.com/i/flow/login',
+        instagram: 'https://www.instagram.com/accounts/login/',
+        discord: 'https://discord.com/login',
+        slack: 'https://slack.com/signin',
+      };
+      await api.openBraveUrl(urls[net] || `https://x.com/login`);
     }
+  };
+
+  const handleConnect = async (net: NetworkId) => {
+    const isConnected = connectedNetworks.includes(net);
+    const api = (window as any).mohivxApi;
+
+    if (net === 'telegram') {
+      if (isConnected) {
+        // Already connected to MTProto, open second Telegram account via Telegram Web
+        if (api?.openNetworkLogin) {
+          await api.openNetworkLogin('telegram', { accountLabel: 'Second Telegram' });
+        }
+        onClose();
+        return;
+      } else {
+        onConnectNetwork('telegram');
+        onClose();
+        return;
+      }
+    }
+
     setConnectingNetwork(net);
     try {
-      const api = (window as any).mohivxApi;
       if (api?.openNetworkLogin) {
         await api.openNetworkLogin(net);
       }
@@ -130,12 +159,16 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
     );
   };
 
-  const handleImportSelected = () => {
+  const handleImportSelected = async () => {
     const browserObj = browsers.find((b) => b.id === selectedBrowser);
     const browserLabel = browserObj ? browserObj.name : 'Brave Browser';
-    selectedNetworks.forEach((netId) => {
+    const api = (window as any).mohivxApi;
+    for (const netId of selectedNetworks) {
+      if (api?.openNetworkLogin) {
+        await api.openNetworkLogin(netId, { accountLabel: browserLabel });
+      }
       onConnectNetwork(netId, browserLabel);
-    });
+    }
     setScannerMode(false);
     onClose();
   };
@@ -190,31 +223,49 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                 {filtered.map((net) => {
                   const isConnected = connectedNetworks.includes(net.id);
                   return (
-                    <button
+                    <div
                       key={net.id}
-                      onClick={() => handleConnect(net.id)}
-                      disabled={connectingNetwork !== null}
-                      className="flex flex-col items-center justify-center p-[10px] rounded-[12px] bg-white/[0.03] hover:bg-white/10 hover:scale-105 active:scale-95 transition-all text-center group disabled:opacity-50 relative"
+                      className="relative group p-[10px] rounded-[12px] bg-white/[0.03] hover:bg-white/10 transition-all flex flex-col items-center justify-center text-center"
                     >
-                      <div className="relative mb-[6px]">
-                        <NetworkIcon network={net.id} size={36} />
-                        {isConnected && (
-                          <div className="absolute -top-[3px] -right-[3px] w-[14px] h-[14px] rounded-full bg-green-500 border-2 border-[#1c1c1e] flex items-center justify-center">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" className="w-[8px] h-[8px]">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          </div>
-                        )}
-                        {connectingNetwork === net.id && (
-                          <div className="absolute inset-0 bg-black/50 rounded-[35%] flex items-center justify-center">
-                            <div className="w-[16px] h-[16px] border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[11px] font-semibold text-white/90 group-hover:text-white leading-tight">
-                        {net.name}
-                      </span>
-                    </button>
+                      {/* 1-click Default Browser Launcher (Brave / Chrome) */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConnectInBrowser(net.id);
+                        }}
+                        className="absolute top-[5px] left-[5px] opacity-0 group-hover:opacity-100 w-[20px] h-[20px] rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-[10px] text-white/80 transition-opacity cursor-pointer z-10"
+                        title="فتح في المتصفح الافتراضي (Brave / Chrome) لتسجيل الدخول السريع بجوجل"
+                      >
+                        🌐
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleConnect(net.id)}
+                        disabled={connectingNetwork !== null}
+                        className="flex flex-col items-center justify-center w-full cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+                      >
+                        <div className="relative mb-[6px]">
+                          <NetworkIcon network={net.id} size={36} />
+                          {isConnected && (
+                            <div className="absolute -top-[3px] -right-[3px] w-[14px] h-[14px] rounded-full bg-green-500 border-2 border-[#1c1c1e] flex items-center justify-center">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" className="w-[8px] h-[8px]">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            </div>
+                          )}
+                          {connectingNetwork === net.id && (
+                            <div className="absolute inset-0 bg-black/50 rounded-[35%] flex items-center justify-center">
+                              <div className="w-[16px] h-[16px] border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[11px] font-semibold text-white/90 group-hover:text-white leading-tight">
+                          {net.name}
+                        </span>
+                      </button>
+                    </div>
                   );
                 })}
               </div>

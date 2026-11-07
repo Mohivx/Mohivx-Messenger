@@ -303,10 +303,25 @@ export const SettingsWindow: React.FC = () => {
     await api.updater.startUpdate(availableUpdate.downloadUrl);
   };
 
-  const handleConnectNewNetwork = async (netId: NetworkId) => {
+  const handleConnectNewNetwork = async (
+    netId: NetworkId,
+    inBrowser = false,
+    label?: string
+  ) => {
     const api = (window as any).mohivxApi;
-    if (api?.openNetworkLogin) {
-      await api.openNetworkLogin(netId);
+    if (!api) return;
+
+    if (inBrowser) {
+      if (api.openNetworkInBrowser) {
+        await api.openNetworkInBrowser(netId);
+      } else if (api.openNetworkLogin) {
+        await api.openNetworkLogin(netId, { openInBrowser: true });
+      }
+      return;
+    }
+
+    if (api.openNetworkLogin) {
+      await api.openNetworkLogin(netId, { accountLabel: label });
     }
   };
 
@@ -1233,21 +1248,50 @@ export const SettingsWindow: React.FC = () => {
                   <div className="grid grid-cols-2 gap-[8px]">
                     {availableNetworks.map((net) => {
                       const isConnected = accounts.some((a) => a.networkId === net.id);
+                      const isTelegram = net.id === 'telegram';
                       return (
-                        <button
+                        <div
                           key={net.id}
-                          type="button"
-                          onClick={() => handleConnectNewNetwork(net.id)}
-                          className="p-[11px] rounded-[8px] bg-[#22242a] hover:bg-[#2a2d35] border border-white/[0.06] flex items-center justify-between transition-colors cursor-pointer"
+                          className="p-[11px] rounded-[8px] bg-[#22242a] hover:bg-[#272930] border border-white/[0.06] flex items-center justify-between transition-colors"
                         >
-                          <div className="flex items-center gap-[10px]">
+                          <div className="flex items-center gap-[10px] min-w-0">
                             <NetworkIcon network={net.id} size={24} />
-                            <span className="text-[12.5px] font-medium text-white">{net.name}</span>
+                            <div className="min-w-0">
+                              <span className="text-[12.5px] font-medium text-white block truncate">{net.name}</span>
+                              {isConnected && (
+                                <span className="text-[10px] text-emerald-400 block leading-tight">Connected</span>
+                              )}
+                            </div>
                           </div>
-                          <span className="text-[11px] text-[#0a84ff] font-medium">
-                            {isConnected ? 'Reconnect' : '+ Connect'}
-                          </span>
-                        </button>
+                          <div className="flex items-center gap-[6px] shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleConnectNewNetwork(
+                                  net.id,
+                                  false,
+                                  isTelegram && isConnected ? 'Second Account' : undefined
+                                )
+                              }
+                              className="px-[8px] py-[4px] rounded-[5px] bg-[#0a84ff]/20 hover:bg-[#0a84ff]/30 text-[#0a84ff] text-[11px] font-medium transition-colors cursor-pointer"
+                              title={
+                                isTelegram && isConnected
+                                  ? 'Connect a secondary Telegram Web account'
+                                  : 'Connect in isolated app window'
+                              }
+                            >
+                              {isTelegram && isConnected ? '+ 2nd Account' : isConnected ? 'Reconnect' : '+ Connect'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleConnectNewNetwork(net.id, true)}
+                              className="p-[5px] rounded-[5px] bg-white/[0.06] hover:bg-white/[0.12] text-white/70 hover:text-white text-[11px] transition-colors cursor-pointer"
+                              title="Open in your default browser (Brave / Chrome) to sign in with Google"
+                            >
+                              🌐
+                            </button>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>

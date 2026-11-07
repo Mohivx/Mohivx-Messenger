@@ -42,7 +42,10 @@ contextBridge.exposeInMainWorld('mohivxApi', {
   openAppDataFolder: () => ipcRenderer.invoke('open-app-folder'),
 
   // Universal Network Web Login (WhatsApp, Instagram, Discord, Slack, etc.)
-  openNetworkLogin: (networkId: string) => ipcRenderer.invoke('open-network-login', networkId),
+  openNetworkLogin: (networkId: string, options?: { accountLabel?: string; openInBrowser?: boolean }) =>
+    ipcRenderer.invoke('open-network-login', typeof options === 'object' ? { networkId, ...options } : networkId),
+  openNetworkInBrowser: (networkId: string) => ipcRenderer.invoke('open-network-in-browser', networkId),
+  openExternalUrl: (url: string) => ipcRenderer.invoke('open-external-url', url),
   onNetworkAuthSuccess: (callback: (accountData: any) => void) => {
     const handler = (_: any, data: any) => callback(data);
     ipcRenderer.on('network-auth-success', handler);

@@ -12,6 +12,22 @@ if (process.platform === 'win32') {
   app.setAppUserModelId(APP_USER_MODEL_ID);
 }
 
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.focus();
+      mainWindow.setAlwaysOnTop(false);
+    }
+  });
+}
+
 let mainWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -180,6 +196,25 @@ function createMainWindow() {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
+  mainWindow.once('ready-to-show', () => {
+    if (!isOffscreen && mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+      mainWindow.setAlwaysOnTop(true);
+      mainWindow.focus();
+      mainWindow.setAlwaysOnTop(false);
+    }
+  });
+
+  // Also ensure window shows and focuses immediately
+  if (!isOffscreen && mainWindow) {
+    mainWindow.show();
+    mainWindow.focus();
+    mainWindow.setAlwaysOnTop(true);
+    mainWindow.focus();
+    mainWindow.setAlwaysOnTop(false);
+  }
+
   mainWindow.webContents.on('console-message', (_, level, message, line, sourceId) => {
     console.log(`[Renderer ${level}] ${message} (${sourceId}:${line})`);
   });
@@ -242,37 +277,41 @@ function openSettingsWindow(initialTab = 'general') {
 }
 
 function createTray() {
-  const appIcon = getAppIcon() || path.join(__dirname, '../assets/icon-32.png');
-  tray = new Tray(appIcon);
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open Mohivx Messenger',
-      click: () => {
-        mainWindow?.show();
-        mainWindow?.focus();
+  try {
+    const appIcon = getAppIcon() || path.join(__dirname, '../assets/icon-32.png');
+    tray = new Tray(appIcon);
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open Mohivx Messenger',
+        click: () => {
+          mainWindow?.show();
+          mainWindow?.focus();
+        },
       },
-    },
-    {
-      label: 'Settings',
-      click: () => {
-        openSettingsWindow('general');
+      {
+        label: 'Settings',
+        click: () => {
+          openSettingsWindow('general');
+        },
       },
-    },
-    { type: 'separator' },
-    {
-      label: 'Quit',
-      click: () => {
-        isAppQuitting = true;
-        app.quit();
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          isAppQuitting = true;
+          app.quit();
+        },
       },
-    },
-  ]);
-  tray.setToolTip('Mohivx Messenger');
-  tray.setContextMenu(contextMenu);
-  tray.on('double-click', () => {
-    mainWindow?.show();
-    mainWindow?.focus();
-  });
+    ]);
+    tray.setToolTip('Mohivx Messenger');
+    tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => {
+      mainWindow?.show();
+      mainWindow?.focus();
+    });
+  } catch (err) {
+    console.warn('[Tray] Failed to initialize tray:', err);
+  }
 }
 
 // Universal Window Controls (targets whichever window sent the event)
@@ -369,134 +408,232 @@ ipcMain.handle('open-app-folder', async () => {
 });
 
 // Universal Network Login Configurations
+const CHROME_DESKTOP_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+
 const NETWORK_CONFIGS: Record<string, { name: string; url: string; userAgent?: string }> = {
+  telegram: {
+    name: 'Telegram Web',
+    url: 'https://web.telegram.org/k/',
+    userAgent: CHROME_DESKTOP_UA,
+  },
   whatsapp: {
-    name: 'WhatsApp',
+    name: 'WhatsApp Web',
     url: 'https://web.whatsapp.com/',
-    userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+    userAgent: CHROME_DESKTOP_UA,
+  },
+  x: {
+    name: 'X (Twitter)',
+    url: 'https://x.com/i/flow/login',
+    userAgent: CHROME_DESKTOP_UA,
   },
   instagram: {
     name: 'Instagram',
     url: 'https://www.instagram.com/accounts/login/',
-    userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+    userAgent: CHROME_DESKTOP_UA,
   },
   discord: {
     name: 'Discord',
     url: 'https://discord.com/login',
+    userAgent: CHROME_DESKTOP_UA,
   },
   slack: {
     name: 'Slack',
     url: 'https://slack.com/signin',
+    userAgent: CHROME_DESKTOP_UA,
   },
   facebook: {
     name: 'Messenger',
     url: 'https://www.messenger.com/login/',
-  },
-  x: {
-    name: 'X (Twitter)',
-    url: 'https://twitter.com/i/flow/login',
+    userAgent: CHROME_DESKTOP_UA,
   },
   googlemessages: {
     name: 'Google Messages',
     url: 'https://messages.google.com/web/authentication',
+    userAgent: CHROME_DESKTOP_UA,
   },
   googlechat: {
     name: 'Google Chat',
     url: 'https://chat.google.com/',
+    userAgent: CHROME_DESKTOP_UA,
   },
   signal: {
     name: 'Signal',
     url: 'https://signal.org/',
+    userAgent: CHROME_DESKTOP_UA,
   },
   linkedin: {
     name: 'LinkedIn',
     url: 'https://www.linkedin.com/messaging/',
+    userAgent: CHROME_DESKTOP_UA,
   },
   line: {
     name: 'LINE',
     url: 'https://line.me/',
+    userAgent: CHROME_DESKTOP_UA,
   },
   matrix: {
     name: 'Matrix (Element)',
     url: 'https://app.element.io/',
+    userAgent: CHROME_DESKTOP_UA,
   },
   viber: {
     name: 'Viber',
     url: 'https://www.viber.com/',
+    userAgent: CHROME_DESKTOP_UA,
   },
   wechat: {
     name: 'WeChat',
     url: 'https://web.wechat.com/',
+    userAgent: CHROME_DESKTOP_UA,
   },
 };
 
 // Universal Network Web Login Window (Isolated persistent partition)
-ipcMain.handle('open-network-login', async (_, networkId: string) => {
-  const config = NETWORK_CONFIGS[networkId] || {
-    name: networkId,
-    url: `https://${networkId}.com`,
-  };
+ipcMain.handle(
+  'open-network-login',
+  async (
+    _,
+    payload: string | { networkId: string; accountLabel?: string; openInBrowser?: boolean }
+  ) => {
+    const networkId = typeof payload === 'string' ? payload : payload.networkId;
+    const accountLabel = typeof payload === 'object' ? payload.accountLabel : undefined;
+    const openInBrowser = typeof payload === 'object' ? payload.openInBrowser : false;
 
-  const appIcon = getAppIcon();
-  const partitionName = `persist:mohivx_${networkId}`;
-  const customSession = session.fromPartition(partitionName);
+    const config = NETWORK_CONFIGS[networkId] || {
+      name: networkId,
+      url: `https://www.google.com/search?q=${encodeURIComponent(networkId)}`,
+      userAgent: CHROME_DESKTOP_UA,
+    };
 
-  if (config.userAgent) {
-    customSession.setUserAgent(config.userAgent);
-  }
+    // If user requested to open directly in their default browser (Brave / Chrome)
+    if (openInBrowser) {
+      await shell.openExternal(config.url);
+      return { success: true, method: 'browser' };
+    }
 
-  const loginWin = new BrowserWindow({
-    width: 1040,
-    height: 760,
-    title: `Connect ${config.name} — Mohivx Messenger`,
-    icon: appIcon,
-    autoHideMenuBar: true,
-    backgroundColor: '#18191c',
-    webPreferences: {
-      partition: partitionName,
-      nodeIntegration: false,
-      contextIsolation: true,
-      sandbox: true,
-    },
-  });
+    const appIcon = getAppIcon();
+    const sanitizedLabel = accountLabel ? accountLabel.replace(/[^a-zA-Z0-9_-]/g, '_') : 'default';
+    const partitionName = `persist:mohivx_${networkId}_${sanitizedLabel}`;
+    const customSession = session.fromPartition(partitionName);
 
-  if (appIcon) {
-    loginWin.setIcon(appIcon);
-  }
+    const ua = config.userAgent || CHROME_DESKTOP_UA;
+    customSession.setUserAgent(ua);
 
-  loginWin.loadURL(config.url);
+    // Strip Electron headers so Google OAuth (Continue with Google) never blocks sign in:
+    customSession.webRequest.onBeforeSendHeaders((details, callback) => {
+      details.requestHeaders['User-Agent'] = ua;
+      delete details.requestHeaders['X-Requested-With'];
+      callback({ cancel: false, requestHeaders: details.requestHeaders });
+    });
 
-  loginWin.webContents.on('did-finish-load', () => {
-    const currentUrl = loginWin.webContents.getURL();
-    console.log(`[NetworkLogin] ${networkId} navigated to: ${currentUrl}`);
-  });
+    const displayTitle = accountLabel
+      ? `Connect ${config.name} (${accountLabel}) — Mohivx Messenger`
+      : `Connect ${config.name} — Mohivx Messenger`;
 
-  loginWin.on('close', async () => {
-    try {
-      const cookies = await customSession.cookies.get({});
-      if (cookies && cookies.length > 0) {
+    const loginWin = new BrowserWindow({
+      width: 1060,
+      height: 780,
+      title: displayTitle,
+      icon: appIcon,
+      autoHideMenuBar: false,
+      backgroundColor: '#18191c',
+      webPreferences: {
+        partition: partitionName,
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: true,
+      },
+    });
+
+    if (appIcon) {
+      loginWin.setIcon(appIcon);
+    }
+
+    // Top Action Bar with 1-click open in default browser button
+    const loginMenu = Menu.buildFromTemplate([
+      {
+        label: '🌐 Open in Default Browser (Brave / Chrome)',
+        click: () => {
+          const curUrl = loginWin.webContents.getURL() || config.url;
+          shell.openExternal(curUrl);
+        },
+      },
+      {
+        label: '🔄 Reload',
+        click: () => loginWin.webContents.reload(),
+      },
+      {
+        label: '⬅ Back',
+        click: () => {
+          if (loginWin.webContents.canGoBack()) loginWin.webContents.goBack();
+        },
+      },
+      {
+        label: '✅ Save & Connect Account',
+        click: () => {
+          loginWin.close();
+        },
+      },
+    ]);
+    loginWin.setMenu(loginMenu);
+
+    // Allow OAuth popups (Google, Apple, Microsoft) so sign-in flows succeed
+    loginWin.webContents.setWindowOpenHandler(({ url }) => {
+      return { action: 'allow' };
+    });
+
+    loginWin.loadURL(config.url);
+
+    loginWin.webContents.on('did-finish-load', () => {
+      const currentUrl = loginWin.webContents.getURL();
+      console.log(`[NetworkLogin] ${networkId} (${sanitizedLabel}) navigated to: ${currentUrl}`);
+    });
+
+    loginWin.on('close', async () => {
+      try {
+        const cookies = await customSession.cookies.get({});
         const accountData = {
-          id: `acc-${networkId}-${Date.now().toString(36)}`,
+          id: `acc-${networkId}-${sanitizedLabel}-${Date.now().toString(36)}`,
           networkId: networkId,
-          username: `${config.name} Account`,
-          displayName: config.name,
+          username: accountLabel
+            ? `${config.name} (${accountLabel})`
+            : `${config.name} Account`,
+          displayName: accountLabel
+            ? `${config.name} (${accountLabel})`
+            : config.name,
           avatarUrl: '',
           connectedAt: new Date().toISOString().split('T')[0],
           status: 'active',
+          partition: partitionName,
         };
         mainWindow?.webContents.send('network-auth-success', accountData);
         if (settingsWindow && !settingsWindow.isDestroyed()) {
           settingsWindow.webContents.send('network-auth-success', accountData);
         }
+      } catch (e) {
+        console.warn('[NetworkLogin] Cookie check warning:', e);
       }
-    } catch (e) {
-      console.warn('[NetworkLogin] Cookie check warning:', e);
-    }
-  });
+    });
 
+    return { success: true };
+  }
+);
+
+// Open Network in Default Browser (Brave / Chrome) directly
+ipcMain.handle('open-network-in-browser', async (_, networkId: string) => {
+  const config = NETWORK_CONFIGS[networkId];
+  const url = config?.url || `https://x.com/login`;
+  await shell.openExternal(url);
   return { success: true };
+});
+
+ipcMain.handle('open-external-url', async (_, targetUrl: string) => {
+  if (targetUrl && (targetUrl.startsWith('https://') || targetUrl.startsWith('http://'))) {
+    await shell.openExternal(targetUrl);
+    return { success: true };
+  }
+  return { success: false, error: 'Invalid URL' };
 });
 
 // Launch Brave with specific URL (Zero-Token direct browsing)
